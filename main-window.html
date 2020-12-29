@@ -1,57 +1,49 @@
 <html>
     <head>
-    <script> 
-        // requires app.allowRendererProcessReuse = false
-        //const { initPush, sendFrame } = require("./node_modules/ableton-push-canvas-display/index.js");
-    </script> 
     </head>
     <body>
         <canvas id="myCanvas" width="960" height="160" style="border:1px solid #c3c3c3;">
-        <script> 
-            var canvas = document.getElementById("myCanvas");
-            console.log( canvas );
-            var ctx = canvas.getContext("2d");
+        <script>
+            const pushDisplay = require("ableton-push-canvas-display");
+
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
 
             function drawFrame(ctx, frameNum) {
-              ctx.strokeStyle = "#ff0"
-              ctx.fillStyle = "#000"
-              ctx.fillRect(0, 0, 960, 160)
-              ctx.fillStyle = "hsl(" + frameNum % 360 +",100%,50%)"
-              ctx.lineWidth = 4
-              ctx.fillRect((frameNum * 2) % 960, (frameNum * 2) % 160, 20, 20)
-              ctx.beginPath()
-              ctx.arc(100, 100, 50, 0, (frameNum / 20.0) % (2 * Math.PI))
-              ctx.lineTo(100, 100)
-              ctx.stroke()
+              ctx.strokeStyle = "#ff0";
+              ctx.fillStyle = "#000";
+              ctx.fillRect(0, 0, 960, 160);
+              ctx.fillStyle = "hsl(" + frameNum % 360 +",100%,50%)";
+              ctx.lineWidth = 4;
+              ctx.fillRect((frameNum * 2) % 960, (frameNum * 2) % 160, 20, 20);
+              ctx.beginPath();
+              ctx.arc(100, 100, 50, 0, (frameNum / 20.0) % (2 * Math.PI));
+              ctx.lineTo(100, 100);
+              ctx.stroke();
 
               ctx.font = '800 20px "SF Pro Display"';
-              ctx.fillStyle = '#fff'
+              ctx.fillStyle = '#fff';
               ctx.fillText("Awesome!", 50, 100);
             }
 
             let frameNum = 0;
 
-            /*
-            // from ableton-canvas example
             function nextFrame() {
-              drawFrame(ctx, frameNum)
-              frameNum++
-              sendFrame(ctx, function(error) {
-                // we can ignore any error here, more or less
-                setTimeout(nextFrame,10) // Do not use nextTick here, as this will not allow USB callbacks to fire.
+              drawFrame(ctx, frameNum);
+              frameNum++;
+              pushDisplay.sendFrame(ctx, function(error) {
+                console.log("called sendFrame()");
+                requestAnimationFrame(nextFrame);
               })
             }
-            */
 
-            function nextFrame(){
-                drawFrame(ctx, frameNum);
-                frameNum++;
-                // if push2 is present then send it there too
-            }
-
-            setInterval( nextFrame, 50 );
-
-
+            pushDisplay.initPush(function (err) {
+              if (!err) {
+                requestAnimationFrame(nextFrame);
+              } else {
+                console.log(err);
+              }
+            });
         </script>
     </body>
 </html>
