@@ -1,6 +1,6 @@
-"use strict";                                                                                                                  
+"use strict";
 
-var fluid = require("infusion"); 
+var fluid = require("infusion");
 require("infusion-electron");
 require("./gridquencer-app.js");
 
