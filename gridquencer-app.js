@@ -41,8 +41,18 @@ fluid.defaults("gridquencer.app", {
                         }
                     }
                 }
-            }
+            },
         },
+    },
+
+    listeners: {
+        onReady: {
+            func: function(app){
+                app.allowRendererProcessReuse = false;
+                console.log(app);
+            },
+            args: ["{that}.app"]
+        }
     }
 });
 

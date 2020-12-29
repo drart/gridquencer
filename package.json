@@ -7,8 +7,13 @@
         "ableton-push-canvas-display": "^1.0.1",
         "flocking": "^2.0.2",
         "flocking-midi": "^1.0.0-dev.20200715T193144Z.94cf29b.gh-30",
+        "infusion-electron": "^0.7.0"
     },
     "scripts": {
-        "start" : "electron ."
+        "start": "electron .",
+        "rebuild": "electron-rebuild -f -w ableton-push-canvas-display"
+    },
+    "devDependencies": {
+        "electron-rebuild": "^2.3.4"
     }
 }
