@@ -45,6 +45,7 @@ fluid.defaults("gridquencer.app", {
         },
     },
 
+    /*
     listeners: {
         onReady: {
             func: function(app){
@@ -54,6 +55,7 @@ fluid.defaults("gridquencer.app", {
             args: ["{that}.app"]
         }
     }
+    */
 });
 
 
