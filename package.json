@@ -8,8 +8,8 @@
         "ableton-push-canvas-display": "1.0.1",
         "flocking": "3.0.0-dev.20201125T044807Z.e93e401",
         "flocking-midi": "1.0.0-dev.20200715T193144Z.94cf29b.gh-30",
-        "infusion-electron": "0.7.0",
-        "electron": "6.0.8"
+        "infusion-electron": "0.8.0",
+        "electron": "11.1.1"
     },
     "scripts": {
         "start": "node_modules/.bin/electron ."

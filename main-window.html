@@ -34,7 +34,7 @@
               pushDisplay.sendFrame(ctx, function(error) {
                 console.log("called sendFrame()");
                 requestAnimationFrame(nextFrame);
-              })
+              });
             }
 
             pushDisplay.initPush(function (err) {
