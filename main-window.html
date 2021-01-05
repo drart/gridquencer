@@ -1,5 +1,20 @@
 <html>
     <head>
+      <script src="node_modules/flocking/dist/flocking-all.js"></script>                                                                                                                                                         
+      <script src="node_modules/flocking/src/ui/play-button/js/play-button.js"></script>
+      <script src="node_modules/flocking-midi/src/core.js"></script>
+      <script src="node_modules/flocking-midi/src/system.js"></script>
+      <script src="node_modules/flocking-midi/src/receiver.js"></script>
+      <script src="node_modules/flocking-midi/src/connection.js"></script>
+      <script src="examples/noisesynths.js"></script>
+      <script>
+          flock.init({
+              chans: 16, 
+              bufferSize: 256 // lowest that chrome allows
+          });
+          var as = flock.environment.audioSystem;
+      </script>
+
     </head>
     <body>
         <canvas id="myCanvas" width="960" height="160" style="border:1px solid #c3c3c3;">

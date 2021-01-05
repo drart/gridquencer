@@ -27,7 +27,9 @@ fluid.defaults("gridquencer.app", {
                     x: 100,
                     y: 100,
                     webPreferences: {
-                        nodeIntegration: true
+                        nodeIntegration: true,
+                        contextIsolation: false,
+                        enableRemoteModule: true
                     },
                 },
                 model: {
