@@ -33,5 +33,4 @@ fluid.defaults("adam.synth.whiteNoiseDrum", {
 });
 
 
-
 // lfNoise .. freq,  whiteNoise, pinkNoise, dust .. density,

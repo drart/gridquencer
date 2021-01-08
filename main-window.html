@@ -1,12 +1,19 @@
 <html>
     <head>
+      <script src="node_modules/infusion-electron/src/renderer-process/namespace-electron-globals.js"></script>
+
       <script src="node_modules/flocking/dist/flocking-all.js"></script>                                                                                                                                                         
       <script src="node_modules/flocking/src/ui/play-button/js/play-button.js"></script>
       <script src="node_modules/flocking-midi/src/core.js"></script>
       <script src="node_modules/flocking-midi/src/system.js"></script>
       <script src="node_modules/flocking-midi/src/receiver.js"></script>
       <script src="node_modules/flocking-midi/src/connection.js"></script>
-      <script src="examples/noisesynths.js"></script>
+      <script src="src/controllers/ableton-push.js"></script>
+      <script src="src/controllers/ableton-push2.js"></script>
+
+
+      <script src="node_modules/bergson/dist/bergson-only.js"></script>
+
       <script>
           flock.init({
               chans: 16, 
@@ -19,7 +26,7 @@
     <body>
         <canvas id="myCanvas" width="960" height="160" style="border:1px solid #c3c3c3;">
         <script>
-            const pushDisplay = require("ableton-push-canvas-display");
+            const pushDisplay = electron.nodeIntegration.require("ableton-push-canvas-display");
 
             let canvas = document.getElementById("myCanvas");
             let ctx = canvas.getContext("2d");
