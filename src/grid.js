@@ -132,14 +132,6 @@ fluid.defaults("adam.grid", {
     }
 });
 
-// todo future model?
-//// have regions marked? 
-fluid.defaults("adam.grid.region", {
-    gradeNames: "fluid.modelComponent",
-    model: {
-        steps: []
-    }
-});
 
 
 /// old idea, still ok?

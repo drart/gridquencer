@@ -1,4 +1,4 @@
-
+// todo have a more abstract class that handles just the midi and then put the drawing in each controller setting
 /// todo components pads, knobs, buttons, lcd
 // todo add colours for each type
 
@@ -206,8 +206,8 @@ fluid.defaults("adam.midi.push", {
             args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
         },
         lcdRefresh: {
-            FuncName: "adam.midi.push.lcdRefresh",
-            args: "{that}"
+            funcName: "adam.midi.push.lcdRefresh",
+            args: ["{that}"]
         },
         // Pad and button handlers
         padWrite: {

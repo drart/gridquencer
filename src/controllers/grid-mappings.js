@@ -12,9 +12,6 @@ fluid.defaults("adam.pushgridmapper", {
     },
 
     components: { 
-        push: {
-            type: "adam.midi.push",
-        },
         sequencergrid: {
             type: "adam.grid",
         }
@@ -28,6 +25,7 @@ fluid.defaults("adam.pushgridmapper", {
     },
 
     notedown: undefined,
+    padsdown: [],
 
     modelListeners: {
         "{sequencergrid}.model.grid": {
@@ -46,14 +44,12 @@ fluid.defaults("adam.pushgridmapper", {
             args: '{push}'
         },
         */
-        "{that}.events.overlapfound.print": {
-            func: console.log,
-        },
-        "{push}.events.padPushed": {
+        
+        "padPushed.createRegion": {
             funcName: "adam.midi.push.gridNoteOn",
             args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2", ]
         },
-        "{push}.events.padReleased": {
+        "{that}.events.padReleased": {
             funcName: "adam.midi.push.gridNoteOff",
             args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2", ]
         },
@@ -115,6 +111,7 @@ adam.midi.push.gridNoteOn = function(that, pos, velocity){
     // todo check for overlapping
     // idea let orientation from origin determine reverse?
     // fire region {cells, origin, end}
+    console.log('kljkljdfa');
 
     if (that.options.notedown !== undefined ){
 

@@ -67,5 +67,19 @@
               }
             });
         </script>
+        <script> 
+          // testing
+          fluid.defaults("adam.controllers.testpush2", {
+            gradeNames: ["adam.midi.push2", "adam.pushgridmapper"],
+            listeners: {
+              "padPushed.printor":{
+                func: console.log
+              },
+              
+            }
+          });
+
+          var push2 = adam.controllers.testpush2();
+        </script>
     </body>
 </html>
