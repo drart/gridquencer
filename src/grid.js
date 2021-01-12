@@ -5,6 +5,7 @@ fluid.defaults("adam.grid", {
         allowoverflow: false, // ie: zones must be unique
         grid: [], // 0-64
         selectedcell: null, // maybe? 
+        regions: []
     },
     rows: 8,
     columns: 8,
