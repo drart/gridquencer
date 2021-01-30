@@ -10,6 +10,12 @@ fluid.defaults("adam.pushgridmapper", {
         regionCreated: null,
     },
 
+    listeners: {
+        regionCreated: {
+            func: console.log
+        }
+    },
+
     invokers: {
         padPressed: {
             funcName: "adam.midi.push.gridNoteOn",

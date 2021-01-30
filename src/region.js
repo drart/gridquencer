@@ -34,12 +34,9 @@ adam.grid.region.createFromCells = function(that, cells){
         that.model.endpoint = cells[1];
        
         var bottomleft, bottomright, topleft, topright;
-        // for range of points
-        // thecell = adam.grid.cell();
-        // thecell.createFromPos( {row: r, column: c} );
+
         if (that.model.startpoint.model.x <= that.model.endpoint.model.x){
             if(that.model.startpoint.model.y <= that.model.endpoint.model.y){
-                console.log('case 1')
                 bottomleft = that.model.startpoint;
                 topright = that.model.endpoint;
                 topleft = adam.grid.cell();
@@ -47,7 +44,6 @@ adam.grid.region.createFromCells = function(that, cells){
                 bottomright.createFromPos({row: that.model.startpoint.model.x, column: that.model.endpoint.model.y});
                 topleft.createFromPos({row: that.model.endpoint.model.x, column: that.model.startpoint.model.y});
             }else{
-                console.log('case 2')
                 bottomright = that.model.startpoint;
                 topleft = that.model.endpoint;
                 bottomleft = adam.grid.cell();
@@ -57,7 +53,6 @@ adam.grid.region.createFromCells = function(that, cells){
             }
         }else{
             if (that.model.startpoint.model.y <= that.model.endpoint.model.y){
-                console.log('case 3')
                 bottomright = that.model.endpoint;
                 topleft = that.model.startpoint;
                 bottomleft = adam.grid.cell();
@@ -65,7 +60,6 @@ adam.grid.region.createFromCells = function(that, cells){
                 topright = adam.grid.cell();
                 topright.createFromPos({row: that.model.startpoint.model.x, column: that.model.endpoint.model.y});
             }else{
-                console.log('case 4')
                 topright = that.model.startpoint;
                 bottomleft = that.model.endpoint;
                 topleft = adam.grid.cell();
@@ -75,7 +69,16 @@ adam.grid.region.createFromCells = function(that, cells){
             }
         }
 
-        console.log(bottomleft.model, bottomright.model, topleft.model, topright.model);
+        //console.log(bottomleft.model, bottomright.model, topleft.model, topright.model);
+ 
+        for(let i = bottomleft.model.x; i <= topleft.model.x; i++){
+            for(let j = bottomleft.model.y; j <= bottomright.model.y; j++){
+                let thecell = adam.grid.cell();
+                thecell.createFromPos({row: i,column: j});
+                that.model.steps.push(thecell);
+            }
+        }
+        //console.log(that.model.steps);
 
     }
 
