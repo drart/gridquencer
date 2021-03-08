@@ -248,7 +248,7 @@ fluid.defaults("adam.midi.push", {
             funcName:  "adam.midi.push.controlToEvents",
             args: ["{that}", "{arguments}.0"]
         },
-        //aftertouch: function(msg){},
+        aftertouch: function(msg){ console.log(msg)},
         //pitchbend: function(msg){}
     },
     //dynamicComponents: {},

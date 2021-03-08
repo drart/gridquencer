@@ -1,5 +1,3 @@
-//const pushDisplay = require("ableton-push-canvas-display");
-
 fluid.defaults("adam.midi.push2", {
     //gradeNames: ["adam.midi.push", "fluid.rendererComponent"],
     gradeNames: ["adam.midi.push"],

@@ -2,45 +2,38 @@
 fluid.defaults("adam.grid", {
     gradeNames: "fluid.modelComponent",
     model: {
-        allowoverflow: false, // ie: zones must be unique
-        grid: [], // 0-64
-        selectedcell: null, // maybe? 
-        regions: []
+        rows: 8,
+        columns: 8,
+        grid: [], 
+        regions: [],
+        selectedcell: null, 
+        selectedregion: null,
+        allowoverlap: false, 
     },
-    rows: 8,
-    columns: 8,
-    modelListeners: {
-    }, 
+
     events: {
-        gridChanged: null
+        gridchanged: null
     },
+
     invokers: {
-        /*
-           addzone: { 
-        //TODO:  should this function take a zone or should it also define the zone?
-        func: function(that, startpos, endpos ){
-        if (that.model.allowoverflow){
-        // allow all additions to the grid
-        return true;
-        }else{
-        // if region doesn't overlap then add
-        if(endpos !== undefined){
-        return that.checkzoneoverlap(startpos, endpos);
-        }else{
-        return that.checkcelloverlap(startpos);
-        }
-        }
+
+        // old
+        checkoverlap: {
+            func: function( that, thing){
+                // does it overlap? 
+                // is it a particular kind of overlap? 
+            },
+            args: ["{that}", "{arguments}.0"]
         },
-        args: ["{that}", "{arguments}.0", "{arguments}.1"]
-        },
-        */
+
         addcell: { // todo fix to grid size?
-            func: function(that, pos, ref = true){
-                let oldgrid = that.model.grid;
-                that.model.grid[pos.row*8 + pos.column] = ref;
+            func: function(that, cell, ref = true){
+                that.model.grid[cell.model.x*8 + cell.model.y] = ref;
             },
             args: ["{that}", "{arguments}.0", "{arguments}.1"]
         },
+
+        // old
         getcell: {
             func: function(that, cell){
                 if(cell === undefined){ // todo: maybe not?
@@ -51,12 +44,46 @@ fluid.defaults("adam.grid", {
             },
             args: ["{that}", "{arguments}.0"]
         },
+
+        addregion: {
+            func: function(that, region){
+                if (that.model.allowoverlap){
+                    // todo make a way to have multiple regions in a grid location
+                    that.model.regions.push(region);
+                }else{
+                    // todo checkoverlap
+                    that.model.regions.push(region);
+                }
+                for (step of region.model.steps){
+                    // todo cell step to grid size? 
+                    that.model.grid[step.model.x*8+step.model.y] = region; 
+                }
+                that.events.gridchanged.fire();
+
+            },
+            args: ["{that}", "{arguments}.0"]
+        },
+
+        /*
+        removeregion: {},
+        */
+
+        selectregion: {
+            func: function(that, region){
+                that.model.selectedregion = region;
+            },
+            args: ["{that}", "{arguments}.0"]
+        },
+
         selectcell: {
             func: function(that, cell){
                 that.model.selectedcell = cell;
             },
             args: ["{that}", "{arguments}.0"]
         },
+
+
+        // old
        checkzoneoverlap:{ 
            func: function(that, stepz){
                for ( key of Object.keys( stepz )){
@@ -113,6 +140,9 @@ fluid.defaults("adam.grid", {
             },
             args: ["{that}", "{arguments}.0"]
         },
+
+        // old
+        // TODO also remove from region?
         removecell: {
             func: function(that, cell){
                 that.model.grid[cell.row*that.options.columns + cell.column] = undefined;
@@ -120,13 +150,15 @@ fluid.defaults("adam.grid", {
             args: ["{that}", "{arguments}.0"]
         }
     },
+
     listeners: {
         onCreate: {
             func: function(that){
-                for (var i = 0; i < (that.model.rows * that.model.columns); i++){
+                for (var i = 0; i <  that.model.rows * that.model.columns; i++){
                     that.model.grid[i] = undefined;
                 }
-                that.model.oldgrid = that.model.grid;
+                // todo do I need this? 
+                //that.model.oldgrid = that.model.grid;
             },
             args: ["{that}"]
         },
@@ -172,4 +204,3 @@ adam.grid.padStateChange = function (padIdx, value) {
     adam.push.sendMidiForStateChange(padIdx, value);
 };
 */
-

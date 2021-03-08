@@ -37,21 +37,36 @@
             let canvas = document.getElementById("myCanvas");
             let ctx = canvas.getContext("2d");
 
+            let ants = [];
+            for (let i = 0; i < 100; i++){
+              ants.push({x: 480, y: 100, xs: Math.random()*2-1, ys: Math.random()*2-1});
+            }
             function drawFrame(ctx, frameNum) {
               ctx.strokeStyle = "#ff0";
               ctx.fillStyle = "#000";
               ctx.fillRect(0, 0, 960, 160);
               ctx.fillStyle = "hsl(" + frameNum % 360 +",100%,50%)";
+              /*
               ctx.lineWidth = 4;
               ctx.fillRect((frameNum * 2) % 960, (frameNum * 2) % 160, 20, 20);
               ctx.beginPath();
               ctx.arc(100, 100, 50, 0, (frameNum / 20.0) % (2 * Math.PI));
               ctx.lineTo(100, 100);
               ctx.stroke();
+              */
+
+              for(let i =0; i < ants.length; i++){
+                ctx.fillRect(ants[i].x, ants[i].y, 10, 10); 
+                ants[i].x = (ants[i].x + ants[i].xs) % 960;
+                ants[i].y = (ants[i].y + ants[i].ys) % 120;
+              }
+
 
               ctx.font = '800 20px "SF Pro Display"';
               ctx.fillStyle = '#fff';
-              ctx.fillText("Awesome!", 50, 100);
+              ctx.textAlign = "center";
+              ctx.fillText("Made by Ableton", 480, 120);
+              ctx.fillText("Powered by Flocking.js", 480, 140);
             }
 
             let frameNum = 0;
@@ -75,28 +90,54 @@
         </script>
         <script> 
           // testing
+
           fluid.defaults("adam.composition", {
             gradeNames: ["fluid.component"],
+
             components: {
               controller: {
                 type: "adam.midi.push2"
               },
               gridmapper: {
                 type: "adam.pushgridmapper"
+              },
+              grid: {
+                type: "adam.grid"
               }
             },
+
             listeners: {
+              "{controller}.events.onReady": {
+                funcName: "{controller}padClearAll",
+                args: "{controller}"
+              },
               "{controller}.events.padPushed": {
                 funcName: "{gridmapper}.padPressed",
               },
               "{controller}.events.padReleased": {
                 funcName: "{gridmapper}.padReleased",
+              },
+              "{gridmapper}.events.regionCreated":{
+                funcName: "{grid}.addregion"
+                //args?
+              },
+              "{grid}.events.gridchanged": {
+                func: function(controller, grid){
+                  for(var i = 0; i < grid.length; i++){
+                    if ( grid[i] !== undefined){
+                      //console.log(grid[i]);
+                      controller.padWrite(Math.floor(i/8), i % 8, 1);
+                    }
+                  }
+                },
+                args: ["{controller}","{grid}.model.grid"]
               }
-
             }
+
           });
 
           var push2 = adam.composition();
+          console.log(push2);
         </script>
     </body>
 </html>

@@ -70,13 +70,14 @@ adam.grid.region.createFromCells = function(that, cells){
         }
 
         //console.log(bottomleft.model, bottomright.model, topleft.model, topright.model);
- 
+        that.model.beats = 0;
         for(let i = bottomleft.model.x; i <= topleft.model.x; i++){
             for(let j = bottomleft.model.y; j <= bottomright.model.y; j++){
                 let thecell = adam.grid.cell();
                 thecell.createFromPos({row: i,column: j});
                 that.model.steps.push(thecell);
             }
+            that.model.beats++;
         }
         //console.log(that.model.steps);
 

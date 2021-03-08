@@ -1,16 +1,17 @@
 fluid.defaults("adam.sequence", {
     gradeNames: "fluid.modelComponent",
+
     model: {
         steps: {},
         beats: 1, // do I really need this? sequencelength?
-        beatlength: 480,
+        beatlength: 480, // todo rename to tickresolution? beatticks? ticksPerBeat?
         target: null, 
         mute: false,
         loop: false,
         sync: "tempo", // should a sequence start immediately or have a way of getting into sync?
         direction: "forward", // reverse, random, random-ish, nan
         playing: false,
-        addingsequencetoselect: true,
+        addingsequencetoselect: true, // todo move this to sequencer
         sequenceticks: 0,
         ticktime: 0, 
         //offset: 0,
@@ -19,6 +20,7 @@ fluid.defaults("adam.sequence", {
         // steps are either change appliers for synth.set
         // or json {"func":"name", "args",[]} invoking the target
     },
+
     invokers: {
         settarget: {
             func: function(that, target){
@@ -26,12 +28,14 @@ fluid.defaults("adam.sequence", {
             },
             args: ["{that}", "{arguments}.0"]
         },
+        /*
         setstep: { // todo: this isn't used yet?
             func: function(that, step, payload){ // number of step, json object
                 that.model.steps[step] = payload;
             },
             args: ["{that}", "{arguments}.0", "{arguments}.1"]
         },
+        */
         setlocationpayload:{
             func: function(that, loc, payload){
                 if (loc === undefined || payload === undefined){
@@ -105,12 +109,14 @@ fluid.defaults("adam.sequence", {
            args: ["{that}"]
            },
            */
+
         clearsequence: {
             func: function(that){
                 that.model.steps = {};
             },
             args: "{that}"
         },
+
         clearBeat: {
             func: function(that,  beat = 0){
                 if (beat > that.model.beats - 1 ) beat = that.model.beats - 1;
@@ -125,6 +131,7 @@ fluid.defaults("adam.sequence", {
             },
             args: ["{that}", "{arguments}.0"]
         },
+
         getStepFromLocation: {
             func: function(that, loc ){
                 let thestep
@@ -138,6 +145,7 @@ fluid.defaults("adam.sequence", {
             },
             args: ["{that}", "{arguments}.0"]
         },
+
         isStepOnBeat: {
             func: function( that, step ){
                 for (key in that.model.steps ){
@@ -152,6 +160,7 @@ fluid.defaults("adam.sequence", {
             },
             args: ["{that}", "{arguments}.0"]
         },
+
         getStepBeat: { /// steps need location, func, args
             func: function(that, step){
                 for ( key in that.model.steps ) {
@@ -162,6 +171,7 @@ fluid.defaults("adam.sequence", {
             },
             args: ["{that}", "{arguments}.0"]
         },
+
         reviseBeat: {
             func: function(that, seq, beat = 0){ // multibeats?
                 if (beat > that.model.beats - 1 ) beat = that.model.beats - 1;
@@ -175,6 +185,7 @@ fluid.defaults("adam.sequence", {
             },
             args: ["{that}", "{arguments}.0", "{arguments}.1"]
         },
+
         reviseNumberBeats: {
             func: function (that, seq, numberOfBeats=1){
                 // todo  // add some more steps or remove steps

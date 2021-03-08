@@ -1,4 +1,4 @@
-/// requires utils.js
+/// requires utils.js (not sure that it does anymore)
 // todo rename this more appropriately
 fluid.defaults("adam.pushgridmapper", {
     gradeNames: ["fluid.modelComponent"], 
