@@ -7,13 +7,14 @@ fluid.defaults("adam.pushgridmapper", {
     },
 
     events: {
-        regionCreated: null,
+        regionDefined: null,
     },
 
     listeners: {
-        regionCreated: {
+        regionDefined: {
             func: console.log
-        }
+        },
+
     },
 
     invokers: {
@@ -46,7 +47,7 @@ adam.midi.push.gridNoteOff = function(that, pos, velocity){
     var cells = fluid.copy( that.model.padsdown );
     region.createFromCells( cells );
     
-    that.events.regionCreated.fire( region );
+    that.events.regionDefined.fire( region );
     
     that.model.padsdown = []; // should this blank the array or just remove the current cell?
 

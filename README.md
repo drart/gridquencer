@@ -1,7 +1,7 @@
 Gridquencer
 ===========
 
-A sequencer for grid interfaces
+A sequencer for grid interfaces, starting with the Ableton Push. 
 
 
 
@@ -13,3 +13,4 @@ https://afterglow-guide.deepsymmetry.org/afterglow/readme#introduction
 
 Features to add:
     save to json?
+    load from json?

@@ -15,8 +15,9 @@
       <script src="src/controllers/ableton-push.js"></script>
       <script src="src/controllers/ableton-push2.js"></script>
       <script src="src/controllers/grid-mappings.js"></script>
-
-
+      <script src="src/sequencer.js"></script>
+      <script src="src/sequence.js"></script>
+      <script src="src/gridsequence.js"></script>
 
       <script src="node_modules/bergson/dist/bergson-only.js"></script>
 
@@ -103,6 +104,9 @@
               },
               grid: {
                 type: "adam.grid"
+              },
+              sequencer: {
+                type: "adam.sequencer"
               }
             },
 
@@ -117,16 +121,21 @@
               "{controller}.events.padReleased": {
                 funcName: "{gridmapper}.padReleased",
               },
-              "{gridmapper}.events.regionCreated":{
-                funcName: "{grid}.addregion"
-                //args?
+              "{gridmapper}.events.regionDefined":{
+                func: function(that, grid, region){
+                   grid.addregion(region);
+                   let gridseq = adam.grid.sequence();
+                   gridseq.model.region = region;
+                   gridseq.regionToSequence(region);
+                },
+                args: ["{that}", "{grid}", "{arguments}.0"]
               },
               "{grid}.events.gridchanged": {
                 func: function(controller, grid){
                   for(var i = 0; i < grid.length; i++){
                     if ( grid[i] !== undefined){
                       //console.log(grid[i]);
-                      controller.padWrite(Math.floor(i/8), i % 8, 1);
+                      controller.padWrite( i % 8, Math.floor(i/8), 1);
                     }
                   }
                 },
@@ -136,8 +145,7 @@
 
           });
 
-          var push2 = adam.composition();
-          console.log(push2);
+          var composition = adam.composition();
         </script>
     </body>
 </html>

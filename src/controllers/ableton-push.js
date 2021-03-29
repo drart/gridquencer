@@ -17,12 +17,6 @@ fluid.defaults("adam.midi.push", {
     },
 
     model : {
-        /*
-        lcdline1: ' '.padEnd(68, ' '),
-        lcdline2: ' '.padEnd(68, ' '),
-        lcdline3: 'Made by Ableton'.padStart(41, ' ').padEnd(68, ' '),
-        lcdline4: 'Powered by Flocking.js'.padStart(45, ' ').padEnd(68, ' '),
-        */
         knob1: { 
             name: "something",
             min: 0,
@@ -142,28 +136,6 @@ fluid.defaults("adam.midi.push", {
     },
 
     modelListeners: {
-        /*
-        lcdline1: { 
-            excludeSource: "init",
-            funcName: "adam.midi.push.lcdWrite",
-            args : ["{that}", "{change}.value" , 0]
-        },
-        lcdline2: {
-            excludeSource: "init",
-            funcName: "adam.midi.push.lcdWrite",
-            args: ["{that}", "{change}.value" , 1]
-        },
-        lcdline3: {
-            excludeSource: "init",
-            funcName: "adam.midi.push.lcdWrite",
-            args: ["{that}", "{change}.value" , 2]
-        },
-        lcdline4: {
-            excludeSource: "init",
-            funcName: "adam.midi.push.lcdWrite",
-            args: ["{that}", "{change}.value" , 3]
-        },
-        */
         buttons: {
             funcName: "adam.midi.push.buttonWrite",
             args: ["{that}", "{change}.value", "{change}.oldvalue" ]
@@ -195,25 +167,6 @@ fluid.defaults("adam.midi.push", {
     },
 
     invokers: {
-        /*
-        // LCD Handlers
-        lcdClearLine: {
-            funcName: "adam.midi.push.lcdClearLine",
-            args: ["{that}", "{arguments}.0"]
-        },
-        lcdClear: {
-            funcName: "adam.midi.push.lcdClear",
-            args: ["{that}"]
-        },
-        lcdWrite: { // lcdwriteline
-            funcName: "adam.midi.push.lcdWrite",
-            args: ["{that}", "{arguments}.0", "{arguments}.1", "{arguments}.2"]
-        },
-        lcdRefresh: {
-            funcName: "adam.midi.push.lcdRefresh",
-            args: ["{that}"]
-        },
-        */
         // Pad and button handlers
         padWrite: {
             funcName: "adam.midi.push.padWrite",
@@ -262,7 +215,7 @@ adam.midi.push.padWrite = function(that, x = 0, y = 0, colour = 1){
     that.send(midimessage); 
 };
 
-adam.midi.push.padClearAll = function(that){
+adam.midi.push.padClearAll = function(that){ // todo adjust for grid size
     for( let x = 0; x < 8; x++){
         for( let y = 0; y < 8; y++){
             that.padWrite(x, y, 0);

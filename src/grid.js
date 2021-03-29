@@ -17,15 +17,6 @@ fluid.defaults("adam.grid", {
 
     invokers: {
 
-        // old
-        checkoverlap: {
-            func: function( that, thing){
-                // does it overlap? 
-                // is it a particular kind of overlap? 
-            },
-            args: ["{that}", "{arguments}.0"]
-        },
-
         addcell: { // todo fix to grid size?
             func: function(that, cell, ref = true){
                 that.model.grid[cell.model.x*8 + cell.model.y] = ref;
@@ -64,9 +55,17 @@ fluid.defaults("adam.grid", {
             args: ["{that}", "{arguments}.0"]
         },
 
-        /*
-        removeregion: {},
-        */
+        removeregion: {
+            func: function(that, region){
+                for (var i = 0; i < that.model.regions; i++){
+                    if ( that.model.regions[i].equals(region) ){
+                        that.model.regions.splice(i, 1);
+                        return;
+                    }
+                }
+            },
+            args: ["{that}", "{arguments}.0"]
+        },
 
         selectregion: {
             func: function(that, region){
@@ -106,6 +105,7 @@ fluid.defaults("adam.grid", {
            },
            args: ["{that}", "{arguments}.0"]
        },
+
        checkcelloverlap: {
             func: function(that, cell){
                 if( that.model.grid[cell.row*that.options.columns + cell.column] === undefined ){ 
@@ -116,14 +116,7 @@ fluid.defaults("adam.grid", {
             },
             args: ["{that}", "{arguments}.0"]
         },
-        /*
-        checkexactoverlap: {
-            func: function( that, cellz ){
-              console.log(' not implemented yet' ); 
-            },
-            args: ["{that}", "{arguments}.0"]
-        },
-        */
+
         getoverlap: {
             func: function(that, cellz){
                 let foundcells = [];

@@ -28,6 +28,7 @@ fluid.defaults("adam.sequence", {
             },
             args: ["{that}", "{arguments}.0"]
         },
+
         /*
         setstep: { // todo: this isn't used yet?
             func: function(that, step, payload){ // number of step, json object
@@ -36,6 +37,7 @@ fluid.defaults("adam.sequence", {
             args: ["{that}", "{arguments}.0", "{arguments}.1"]
         },
         */
+
         setlocationpayload:{
             func: function(that, loc, payload){
                 if (loc === undefined || payload === undefined){
@@ -53,6 +55,7 @@ fluid.defaults("adam.sequence", {
             },
             args: ["{that}", "{arguments}.0", "{arguments}.1"]
         },
+
         getlocationpayload: {
             func: function( that, loc ){
                 //console.log( that.getStepFromLocation( loc ) );
@@ -61,6 +64,7 @@ fluid.defaults("adam.sequence", {
             },
             args: [ "{that}", "{arguments}.0"]
         },
+        
         arraytosequence: {
             func: function(that, arr){
                 let beatlength = that.model.beatlength;
