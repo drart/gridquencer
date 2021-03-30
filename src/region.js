@@ -121,7 +121,7 @@ adam.grid.region.equals = function(that, region){
 };
 
 
-adam.grid.region.getRow = function(that, rowNumber){
+adam.grid.region.getRow = function(that, rowNumber){ // zero indexed for first row of region
     if(rowNumber > that.model.beats){
         console.log('error: rowNumber greater than rows available');
         return;

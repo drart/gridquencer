@@ -15,8 +15,8 @@ fluid.defaults("adam.sequence", {
         sequenceticks: 0,
         ticktime: 0, 
         //offset: 0,
-        //currentstep: undefined,
-        //previousstep: undefined,
+        currentstep: undefined,
+        previousstep: undefined,
         // steps are either change appliers for synth.set
         // or json {"func":"name", "args",[]} invoking the target
     },
@@ -27,6 +27,14 @@ fluid.defaults("adam.sequence", {
                 that.model.target = target;
             },
             args: ["{that}", "{arguments}.0"]
+        },
+
+        tick: {
+            func: function (that){
+                that.model.ticktime++;
+                // switch (direction){}
+            },
+            args: ["{that}"]
         },
 
         /*

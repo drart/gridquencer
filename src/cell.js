@@ -17,6 +17,12 @@ fluid.defaults("adam.grid.cell", {
             }, 
             args: ["{that}", "{arguments}.0"]
         },
+        posToMidiNote: {
+            func: function(that, msg){
+                return (Math.floor((that.model.x + 36)/8)) + ((that.model.y + 36) % 8);
+            },
+            args: ["{that}", "{arguments}.0"]
+        },
         createFromPos: {
             func: function(that, cell){
                 //console.log(cell);
@@ -29,9 +35,7 @@ fluid.defaults("adam.grid.cell", {
             funcName: "adam.grid.cell.equals",
             args: ["{that}", "{arguments}.0"]
         }
-
     }
-
     // modelListeners // x->row row->x
 });
 

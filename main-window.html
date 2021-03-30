@@ -18,6 +18,7 @@
       <script src="src/sequencer.js"></script>
       <script src="src/sequence.js"></script>
       <script src="src/gridsequence.js"></script>
+      <script src="synths.js"></script>
 
       <script src="node_modules/bergson/dist/bergson-only.js"></script>
 
@@ -107,6 +108,9 @@
               },
               sequencer: {
                 type: "adam.sequencer"
+              }, 
+              synth: {
+                type: "adam.ticksynth"
               }
             },
 
@@ -122,24 +126,43 @@
                 funcName: "{gridmapper}.padReleased",
               },
               "{gridmapper}.events.regionDefined":{
-                func: function(that, grid, region){
-                   grid.addregion(region);
-                   let gridseq = adam.grid.sequence();
-                   gridseq.model.region = region;
-                   gridseq.regionToSequence(region);
+                func: function(sequencer, grid, synth, region){
+
+                  let gridseq = adam.gridquencer.sequence();
+                  //let gridseq2 = fluid.merge(region, adam.gridquencer.sequence()) /// ????
+                  //console.log(gridseq2);
+                  
+                   gridseq.regionToSequence(region, {"func": "trig", "args": 1000});
+                   gridseq.model.loop = true;
+                   gridseq.model.target = synth;
+
+                   sequencer.addsequence(gridseq);
+                   grid.addregion(gridseq.model.region); // todo fix this
                 },
-                args: ["{that}", "{grid}", "{arguments}.0"]
+                args: ["{sequencer}", "{grid}", "{synth}", "{arguments}.0"]
               },
+              
               "{grid}.events.gridchanged": {
-                func: function(controller, grid){
+                func: function(controller, grid, sequencer){
                   for(var i = 0; i < grid.length; i++){
                     if ( grid[i] !== undefined){
-                      //console.log(grid[i]);
+                      console.log(grid[i]);
                       controller.padWrite( i % 8, Math.floor(i/8), 1);
+                      if (grid[i].model.selected === true){
+                        controller.padWrite( i % 8, Math.floor(i/8), 10); 
+                      }
                     }
                   }
+
+                  for(s of sequencer.model.sequences){
+                    console.log(s);
+                    if (s.model.currentstep !== undefined){
+                      console.log(s.model.currentstep);
+                    }
+                  }
+
                 },
-                args: ["{controller}","{grid}.model.grid"]
+                args: ["{controller}","{grid}.model.grid", "{sequencer}"]
               }
             }
 

@@ -28,5 +28,10 @@ Grid study
 	long press
 	double press
 
+TODO
+=====
+typechecking (check that region methods have regions coming into them) fluid.hasGrade? 
 
-typechecking (check that region methods have regions coming into them)
+fluid.merge with an already instantiated object?
+
+grid is going to have to change for each beat or selection or action.
