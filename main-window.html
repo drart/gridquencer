@@ -129,8 +129,6 @@
                 func: function(sequencer, grid, synth, region){
 
                   let gridseq = adam.gridquencer.sequence();
-                  //let gridseq2 = fluid.merge(region, adam.gridquencer.sequence()) /// ????
-                  //console.log(gridseq2);
                   
                    gridseq.regionToSequence(region, {"func": "trig", "args": 1000});
                    gridseq.model.loop = true;

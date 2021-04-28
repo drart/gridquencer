@@ -26,81 +26,7 @@ fluid.defaults("adam.sequencer",{
         },
         options: {
             callback: {
-                func: function(that){
-                    if (that.model.ticktime % that.model.beatlength === 0){
-                        //console.log(that.model.ticktime);
-                        that.events.beat.fire( that.model.ticktime / that.model.beatlength );                        
-                    }
-                    /*
-                    if (that.model.ticktime % that.model.beatlength === that.model.beatlength / 2 ) {
-                        for ( let s of that.model.sequences){
-                            if ( Object.keys(s.model.steps).length === 1 && s.model.playing === true){
-                                // hack 
-                                //that.push.padWrite( s.model.steps[0].location.row, s.model.steps[0].location.column );
-
-                                // hack todo make a better solution
-                                if (s.model.steps[0].args.type === "noteOn"){
-                                    let noteOff = fluid.copy(s.model.steps[0].args);
-                                    noteOff.type = "noteOff";
-                                    s.model.target[s.model.steps[0].func](noteOff);
-                                }
-                                // end noteoff hack
-                            }
-                        }
-                    }
-                    */
-
-                    for (let s of that.model.sequences){
-                        
-                        let thetick;
-                        if (s.model.playing === true){
-
-                            thetick = (s.model.loop === true) ? that.model.ticktime % s.model.sequenceticks: that.model.ticktime;
-                        
-                            if(s.model.mute === true){
-                                s.model.ticktime++;
-                                continue;
-                            }
-                            
-                        }else{
-                            continue;
-                        }
-
-                        /*
-                        // TODO current step considering sequence direction
-                        */
-
-                        if ( s.model.steps[thetick] !== undefined ){
-                            const payload = s.model.steps[thetick].payload;
-                            const target = s.model.target;
-                            s.model.currentstep = s.model.steps[thetick];
-                            target[payload.func](payload.args);
-                            // todo if grid exisits then upadte it with payload location to be highlighted? 
-                            // todo move the pad updates to a separate function
-                            /*
-                            if(that.sequencergrid !== undefined){
-                                that.push.padWrite( payload.location.row, payload.location.column, 30);
-                                if (s.model.previousstep){
-                                    that.push.padWrite( s.model.previousstep.location.row, s.model.previousstep.location.column );
-                                }
-                            }
-
-                            if(payload.func){
-                                target[payload.func](payload.args);
-                            }else{
-                                target.set(payload);
-                            }
-                            
-
-                            if ( Object.keys(s.model.steps).length > 1){
-                                s.model.previousstep = s.model.steps[thetick];
-                            }
-                            */
-                        }
-                        s.model.ticktime++; /// change this to tick 
-                    }
-                    that.model.ticktime++;
-                },
+                funcName: "adam.sequencer.engine",
                 args: ["{that}"]
             }
         }
@@ -126,84 +52,22 @@ fluid.defaults("adam.sequencer",{
 
     invokers: {
         setTempo: {
-            func: function(that, bpm){
-                that.model.bpm = bpm;
-                that.set("pulse.freq", that.model.bpm/60 * that.model.beatlength);
-                console.log( bpm );
-            },
+            funcName: "adam.sequencer.setTempo",
             args: ["{that}", "{arguments}.0"]
         },
         getsequence: { 
-            func: function(that, seq){
-                let result = that.model.sequences.indexOf(seq);
-
-                if( result !== -1 ){
-                    result = that.model.sequences[ result ]; 
-                    return result;
-                }else{
-                    return undefined;
-                }
-            },
+            funcName: "adam.sequence.getSequence",
             args: ["{that}", "{arguments}.0"]
         },
+
         addsequence: {
             func: function(that, seq){
-                if(that.thegrid === null){
-                    console.log('null grid');
-                    return false;
-                }
-                /* this checking for overlap has been put into the grid mapping instead
-                }else{
-                    if ( that.thegrid.checkzoneoverlap( seq.model.steps ) ){
-
-                        // get the overlapping sequence  // no logic for overlapping sequences
-                        // set the selected cell to be the first overlapping cell
-                        let keys = Object.keys(seq.model.steps);
-                        let foundseq = null; 
-                        for ( let key of keys ){
-                            foundseq = that.thegrid.getcell( seq.model.steps[key].location );
-                            if (foundseq){
-                                /// todo , make this selection an option
-                                that.thegrid.model.selectedcell = seq.model.steps[key].location;
-                                console.log("selected cell is " ); 
-                                console.log(that.thegrid.model.selectedcell);
-
-                                if (key === keys[0]){ /// if the first cell is first beat of found sequence then revise it
-                                    let step = foundseq.getStepFromLocation( seq.model.steps[0].location ); 
-                                    let beat = foundseq.getStepBeat( step );
-                                    let removedbeats = foundseq.reviseBeat(seq, beat);
-
-                                    //if (that.push){ /// todo bad solution
-                                    //    for(step of removedbeats){
-                                    //        that.push.padWrite( step.location.row, step.location.column, 0 );
-                                    //        console.log( step.location );
-                                    //    }
-                                    //}
-                                    //return true;
-
-                                }
-                                break; 
-                            } 
-                        }
-                        return false;
-                    }
-                };
-                */
-
-                /*
-                // if no overlap put into grid with reference to sequence 
-                for( let key of Object.keys(seq.model.steps)){
-                    let loc = seq.model.steps[key].location;
-                    that.thegrid.addcell( loc, seq );
-                }
-                */
-
-                //seq.model.currentstep = 0;
-                //seq.model.playing = true; // todo: defer this to actual playing?
-
                 that.model.sequencestostart.push( seq );
 
-                if(seq.model.addingsequencetoselect === true){that.model.selectedsequence = seq ; console.log('squence was selected by adding');};
+                if(seq.model.addingsequencetoselect === true){
+                    that.model.selectedsequence = seq ; 
+                    console.log('squence was selected by adding');
+                }
 
                 that.model.sequences.push(seq);
 
@@ -211,25 +75,8 @@ fluid.defaults("adam.sequencer",{
             },
             args: ["{that}", "{arguments}.0"]
         },
-        popsequence: {
-            func: function(that){
-                let thesequence = that.model.sequences.pop();
-                if (thesequence === undefined) {
-                    return thesequence;
-                }
 
-                /*
-                for ( key in thesequence.model.steps ){ // or just pass on to remove? 
-                    let step = thesequence.model.steps[key];
-                    that.thegrid.removecell( step.location );
-                }
-                that.thegrid.events.gridChanged.fire(); 
-                */
 
-                return thesequence;
-            },
-            args: "{that}"
-        },
         removesequence: {
             func: function(that, seq){
                 var deletedsequence;
@@ -249,24 +96,86 @@ fluid.defaults("adam.sequencer",{
             },
             args: ["{that}", "{arguments}.0"]
         },
+
+        popsequence: {
+            funcName: "{that}.model.sequences.pop"
+        },
         mutesequence: {
-            func: function(that, seq){
-                that.getsequence(seq).mute = true;
-                return true;
-            },
+            funcName: "adam.sequencer.muteSequence",
             args: ["{that}", "{arguments}.0"]
         },
         selectsequence: {
-            func: function(that, seq){
-                if ( that.getsequence(seq) !== -1 ){ 
-                    that.model.selectedsequence = seq;
-                    return true;
-                }else{
-                    return false;
-                }
-            },
+            funcName: "adam.sequencer.selectSequence",
             args: ["{that}", "{arguments}.0"]
         }
     }
 });
 
+adam.sequencer.engine = function (that) {
+
+    if (that.model.ticktime % that.model.beatlength === 0) {
+        that.events.beat.fire(that.model.ticktime / that.model.beatlength);
+    }
+
+    for (let s of that.model.sequences) {
+
+        let thetick;
+        if (s.model.playing === true) {
+
+            thetick = (s.model.loop === true) ? that.model.ticktime % s.model.sequenceticks : that.model.ticktime;
+
+            if (s.model.mute === true) {
+                s.model.ticktime++;
+                continue;
+            }
+
+        } else {
+            continue;
+        }
+
+        /*
+        // TODO current step considering sequence direction
+        */
+
+        if (s.model.steps[thetick] !== undefined) {
+            const payload = s.model.steps[thetick].payload;
+            const target = s.model.target;
+            s.model.currentstep = s.model.steps[thetick];
+            target[payload.func](payload.args);
+        }
+        s.model.ticktime++; /// change this to tick 
+    }
+    that.model.ticktime++;
+
+};
+
+adam.sequencer.setTempo = function (that, bpm) {
+    that.model.bpm = bpm;
+    that.set("pulse.freq", that.model.bpm / 60 * that.model.beatlength);
+    console.log(bpm);
+};
+
+adam.sequencer.selectSequence = function (that, seq) {
+    if (that.getsequence(seq) !== -1) {
+        that.model.selectedsequence = seq;
+        return true;
+    } else {
+        return false;
+    }
+};
+
+adam.sequencer.muteSequence = function (that, seq) {
+    that.getsequence(seq).mute = true;
+    return true;
+};
+
+adam.sequencer.getSequence = function (that, seq) {
+    let result = that.model.sequences.indexOf(seq);
+
+    if (result !== -1) {
+        result = that.model.sequences[result];
+        return result;
+    } else {
+        return undefined;
+    }
+};

@@ -1,34 +1,24 @@
-
 fluid.defaults("adam.grid.cell", {
     gradeNames: "fluid.modelComponent",
     
     model: {
         x: undefined,
         y: undefined,
-        row: undefined,
-        column: undefined
+        //row: undefined, // legacy names, unsure whether to use or not
+        //column: undefined
     },
     
     invokers: {
         midiNoteToPos:{
-            func: function(that, msg  ){
-                that.model.x = Math.floor((msg.note - 36) / 8);
-                that.model.y = (msg.note -36) % 8;
-            }, 
+            funcName: "adam.grid.cell.midiNoteToPos",
             args: ["{that}", "{arguments}.0"]
         },
         posToMidiNote: {
-            func: function(that, msg){
-                return (Math.floor((that.model.x + 36)/8)) + ((that.model.y + 36) % 8);
-            },
+            funcName: "adam.grid.cell.posToMidiNote",
             args: ["{that}", "{arguments}.0"]
         },
         createFromPos: {
-            func: function(that, cell){
-                //console.log(cell);
-                that.model.x = cell.row;
-                that.model.y = cell.column;
-            },
+            funcName: "adam.grid.cell.createFromPos",
             args: ["{that}", "{arguments}.0"]
         },
         equals: {
@@ -36,11 +26,28 @@ fluid.defaults("adam.grid.cell", {
             args: ["{that}", "{arguments}.0"]
         }
     }
-    // modelListeners // x->row row->x
 });
 
-adam.grid.cell.equals = function(that, cell){
-    if (cell.model.x === that.model.x && cell.model.y && that.model.y ){
+
+adam.grid.cell.createFromPos = function(that, pos){
+    console.log('calling createFromPos, old code');
+    that.model.x = pos.row;
+    that.model.y = pos.column;
+};
+
+/// wired to ableton push mapping
+adam.grid.cell.midiNoteToPos = function (that, msg) {
+    that.model.x = Math.floor((msg.note - 36) / 8);
+    that.model.y = (msg.note - 36) % 8;
+};
+
+/// wired to ableton push mapping
+adam.grid.cell.posToMidiNote = function(that){
+    return (Math.floor((that.model.x + 36) / 8)) + ((that.model.y + 36) % 8);
+}
+
+adam.grid.cell.equals = function (that, cell) {
+    if (cell.model.x === that.model.x && cell.model.y && that.model.y) {
         return true;
     }
 
