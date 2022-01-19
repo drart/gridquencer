@@ -1,9 +1,7 @@
 <html>
     <head>
       <script src="node_modules/infusion-electron/src/renderer-process/namespace-electron-globals.js"></script>
-
-      <script src="node_modules/flocking/dist/flocking-all.js"></script>                                                                                                                                                         
-      <script src="node_modules/flocking/src/ui/play-button/js/play-button.js"></script>
+      <script src="node_modules/flocking/dist/flocking-all.js"></script>                                                                                                                                                         <script src="node_modules/flocking/src/ui/play-button/js/play-button.js"></script>
       <script src="node_modules/flocking-midi/src/core.js"></script>
       <script src="node_modules/flocking-midi/src/system.js"></script>
       <script src="node_modules/flocking-midi/src/receiver.js"></script>
@@ -62,7 +60,6 @@
                 ants[i].x = (ants[i].x + ants[i].xs) % 960;
                 ants[i].y = (ants[i].y + ants[i].ys) % 120;
               }
-
 
               ctx.font = '800 20px "SF Pro Display"';
               ctx.fillStyle = '#fff';
@@ -128,6 +125,7 @@
               "{gridmapper}.events.regionDefined":{
                 func: function(sequencer, grid, synth, region){
 
+                  console.log(sequencer, grid, synth, region);
                   let gridseq = adam.gridquencer.sequence();
                   
                    gridseq.regionToSequence(region, {"func": "trig", "args": 1000});

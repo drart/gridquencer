@@ -56,13 +56,13 @@ fluid.defaults("adam.sequencer",{
             args: ["{that}", "{arguments}.0"]
         },
         getsequence: { 
-            funcName: "adam.sequence.getSequence",
+            funcName: "adam.sequencer.getSequence",
             args: ["{that}", "{arguments}.0"]
         },
 
         addsequence: {
             func: function(that, seq){
-                that.model.sequencestostart.push( seq );
+                //that.model.sequencestostart.push( seq );
 
                 if(seq.model.addingsequencetoselect === true){
                     that.model.selectedsequence = seq ; 
@@ -70,7 +70,7 @@ fluid.defaults("adam.sequencer",{
                 }
 
                 that.model.sequences.push(seq);
-
+                // todo? 
                 return true;
             },
             args: ["{that}", "{arguments}.0"]
@@ -97,9 +97,11 @@ fluid.defaults("adam.sequencer",{
             args: ["{that}", "{arguments}.0"]
         },
 
+        /*
         popsequence: {
             funcName: "{that}.model.sequences.pop"
         },
+        */
         mutesequence: {
             funcName: "adam.sequencer.muteSequence",
             args: ["{that}", "{arguments}.0"]

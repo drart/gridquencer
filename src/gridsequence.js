@@ -30,5 +30,4 @@ adam.gridquencer.sequence.regionToSequence = function(that, region, payload){
     }
 
     that.model.sequenceticks = that.model.beats * that.model.beatlength;
-
 };
