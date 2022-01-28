@@ -1,20 +1,16 @@
 "use strict";
 
-var fluid = require("infusion");
+var fluid = require("infusion"),
+    gridquencer = fluid.registerNamespace("gridquencer");
 
 fluid.defaults("gridquencer.app", {
     gradeNames: "electron.app",
-    model: {
-        commandLineSwitches: {
-            expander: {
-                funcName: "fluid.stringTemplate",
-                args: [
-                    "autoplay-policy", 
-                    "no-user-gesture-required"
-                ]
-            }
-        }
+
+    commandLineSwitches: {
+        "autoplay-policy": null,
+        "no-user-gesture-required": null
     },
+
     components: {
         mainWindow: {
             createOnEvent: "onReady",
@@ -28,9 +24,8 @@ fluid.defaults("gridquencer.app", {
                     y: 100,
                     webPreferences: {
                         nodeIntegration: true,
-                        contextIsolation: false,
-                        enableRemoteModule: true
-                    },
+                        contextIsolation: false
+                    }
                 },
                 model: {
                     url: {
@@ -43,10 +38,18 @@ fluid.defaults("gridquencer.app", {
                         }
                     }
                 }
-            },
-        },
+            }
+        }
     },
 
+    listeners: {
+        "onCreate.disableProcessReuse": {
+            funcName: "gridquencer.app.disableProcessReuse",
+            args: ["{that}.app"]
+        }
+    }
 });
 
-
+gridquencer.app.disableProcessReuse = function (electronApp) {
+    electronApp.allowRendererProcessReuse = false;
+};
