@@ -6,36 +6,23 @@ var Cell = require("./src/cell");
 var Region = require("./src/region");
 var Grid = require("./src/grid");
 
+var Sequence = require("./src/sequence");
+var Sequencer = require("./src/sequencer");
+
+
 var divisions = [ 1, 2, 5];
 var divisionVolages = [13, 26, 66];
 let pulseCount = 0;
 
-let seq; 
-let seqColours = [10, 20, 30, 40, 50, 60, 70];
-
 /// MIDI Devices
 let pushController;
-let virtualMidi;
 let sequencerOut;
 let gridDisplay;
 
 var grid = new Grid.Grid();
 var padsDown = [];
 
-/// VCV Gate Send
-// figure this out
-// 40 clock
-// 44 muxlicer channel 1
-// 44 muxlicer channel 2
-// 44 muxlicer channel 3
-// 44 muxlicer channel 4
-// 44 muxlicer channel 5
-// 44 muxlicer channel 6
-// 44 muxlicer channel 7
-// 44 muxlicer channel 8
-
-
-
+var Seq = new Sequencer.Sequencer();
 
 function setup(){
 
@@ -50,14 +37,13 @@ function setup(){
 			blankGridDisplay();
 		}
 		if ( input.getPortName(i) === "IAC Driver Bus 1" ){
-			virtualMidi = new midi.Input();
-			virtualMidi.on('message', syncSequencer );
-			virtualMidi.openPort(i);
-
 			sequencerOut = new midi.Output();	
 			sequencerOut.openPort(i);
 		}
 	}
+
+
+	
 }
 
 function addCell( midimsg ){
@@ -75,8 +61,17 @@ function createRegion( padsdown ){
 	return region;
 }
 
-function createSequence( newRegion ){
-	console.log( newRegion );
+function createSequence( region ){
+
+	var sequence = new Sequence.Sequence();
+
+	sequence.arrayToSequence( region.rows );
+	sequence.playing = true;
+	sequence.loop = true;
+	Seq.addSequence( sequence );
+
+	//console.log(sequence);
+	//console.log( Seq.sequences.length );
 }
 
 function pushControllerMidiEvent( deltaTime, midimsg ){
@@ -119,13 +114,13 @@ function updatePushController(){
 	});
 };
 
+/*
 // receives virtual MIDI messages from VCV rack
 function syncSequencer( deltaTime, message ){
 
 
 	/// TODO respond to region, rather than hardcoded a sequence
 	if(message[0] === 144 && message[1] !== 40){
-		/*
 		if ( pulseCount > 7 ){
 			pulseCount = 0;
 		}
@@ -145,7 +140,6 @@ function syncSequencer( deltaTime, message ){
 		}
 		pulseCount++;
 
-		*/
 	}
 
 	if(message[0] === 144 && message[1] === 40){
@@ -156,11 +150,12 @@ function syncSequencer( deltaTime, message ){
 		}, 20 );
 	}
 }
+*/
 
 function sendGrid(gridpos, colour){
 
 	if( pushController ){
-		console.log(gridpos);
+		//console.log(gridpos);
 		gridDisplay.send([144, 36 + gridpos.x + (gridpos.y*8),  colour]);
 	}
 }

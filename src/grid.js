@@ -19,7 +19,7 @@ exports.Grid.prototype.printUnemptyCells = function(){
 	this.thegrid.forEach(function(cell){
 		if( cell ){unemptycells++}	
 	});
-	console.log("unempty cells in grid: " + unemptycells );
+	//console.log("unempty cells in grid: " + unemptycells );
 
 };
 

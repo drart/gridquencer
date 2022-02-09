@@ -14,13 +14,15 @@ Install node.js modules:
 
 	> npm install 
 
+Set up IAC Bus 1
+----------------
+
+https://support.apple.com/en-ca/guide/audio-midi-setup/ams1013/mac
 
 Running
 -------
 
     > node gridquencer.js
-
-
 
 
 Notes to myself
