@@ -5,6 +5,7 @@
     "description": "",
     "author": "Adam Tindale",
     "dependencies": {
+        "events": "^3.3.0",
         "midi": "^2.0.0"
     }
 }

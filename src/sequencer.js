@@ -1,5 +1,6 @@
 //var Sequence = require("./sequence");
 
+const events = require("events");
 
 exports.Sequencer = function(){
 	this.bpm = 60;
@@ -10,11 +11,12 @@ exports.Sequencer = function(){
 	this.sequencestostart = [];
 	
 	this.grid = null;
-	
+	this.events = new events.EventEmitter();
+
 	let engine = setInterval( function(seq){
 
 		if( seq.ticktime % seq.beatlength === 0 ){
-			console.log('beat');
+			seq.events.emit('beat');				
 		}
 
 		for ( let s of seq.sequences ){

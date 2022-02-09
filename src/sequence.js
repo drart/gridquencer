@@ -1,3 +1,4 @@
+const events = require("events");
 
 exports.Sequence = function(){
 
@@ -12,6 +13,8 @@ exports.Sequence = function(){
 	this.playing = false;
 	this.currentstep = undefined;
 	this.previousstep = undefined;
+
+	this.events = new events.EventEmitter();
 
 };
 
@@ -52,7 +55,8 @@ exports.Sequence.prototype.tick = function(){
 	}
 
 	if( this.steps[ this.tickTime ] !== undefined ){
-		console.log( this.steps[ this.tickTime ] );
+		//console.log( this.steps[ this.tickTime ] );
+		this.events.emit('trigger');
 	}
 
 };

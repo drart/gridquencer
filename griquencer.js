@@ -43,7 +43,9 @@ function setup(){
 	}
 
 
-	
+	Seq.events.on('beat', function(){
+		console.log('beat');
+	});	
 }
 
 function addCell( midimsg ){
@@ -72,6 +74,9 @@ function createSequence( region ){
 
 	//console.log(sequence);
 	//console.log( Seq.sequences.length );
+
+
+	sequence.events.on('trigger', function(){ console.log('lkajdf')});
 }
 
 function pushControllerMidiEvent( deltaTime, midimsg ){
