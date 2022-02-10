@@ -44,7 +44,7 @@ function setup(){
 
 
 	Seq.events.on('beat', function(){
-		console.log('beat');
+		//console.log('beat');
 	});	
 }
 
@@ -70,13 +70,21 @@ function createSequence( region ){
 	sequence.arrayToSequence( region.rows );
 	sequence.playing = true;
 	sequence.loop = true;
-	Seq.addSequence( sequence );
+	sequence.colour = Seq.sequences.length + 1;
+	Seq.queueSequence( sequence );
+	Seq.selectSequence( sequence );
 
 	//console.log(sequence);
 	//console.log( Seq.sequences.length );
 
-
-	sequence.events.on('trigger', function(){ console.log('lkajdf')});
+	sequence.events.on('trigger', function(e){ 
+		sendGrid(e, 10 );
+		sequencerOut.send([144, 48 + sequence.colour, 127]);
+		setTimeout( function(){
+			sendGrid( e, sequence.colour );
+			sequencerOut.send([144, 48 + sequence.colour, 0]);
+		}, 100 );
+	});
 }
 
 function pushControllerMidiEvent( deltaTime, midimsg ){

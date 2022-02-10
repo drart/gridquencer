@@ -56,7 +56,8 @@ exports.Sequence.prototype.tick = function(){
 
 	if( this.steps[ this.tickTime ] !== undefined ){
 		//console.log( this.steps[ this.tickTime ] );
-		this.events.emit('trigger');
+		this.events.emit('trigger', this.steps[this.tickTime] );
+		return( this.steps[this.tickTime] );
 	}
 
 };
