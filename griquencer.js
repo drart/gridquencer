@@ -35,6 +35,11 @@ function setup(){
 			gridDisplay = new midi.Output();
 			gridDisplay.openPort(i);
 			blankGridDisplay();
+
+
+
+			/// sequencerOut - new midi.Output();
+			/// sequencerOut.openVirtualPort('griquencer');
 		}
 		if ( input.getPortName(i) === "IAC Driver Bus 1" ){
 			sequencerOut = new midi.Output();	
