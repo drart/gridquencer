@@ -50,6 +50,7 @@ function setup(){
 		//console.log('beat');
 	});	
 }
+
 function createRegion( padsdown ){
 	
 	var region = new Region.Region();
@@ -69,9 +70,7 @@ function createSequence( region ){
 	Seq.queueSequence( sequence );
 	Seq.selectSequence( sequence );
 
-	//console.log(sequence);
-	//console.log( Seq.sequences.length );
-
+	// TODO This nees to be more sensible
 	sequence.events.on('trigger', function(e){ 
 		sendGrid(e, 10 );
 		sequencerOut.send([144, 48 + sequence.colour, 127]);
@@ -103,7 +102,7 @@ function pushControllerMidiEvent( deltaTime, midimsg ){
 		var overlappingRegions = grid.addRegion( newRegion ); 
 
 		if ( overlappingRegions.length ==  0 ){
-			// old code var seq = createSequence( resultingRegion, grid.regions.length-1 );
+			createSequence( newRegion );
 			console.log( ' added region ' );
 		}else{
 			console.log('region overlapped with exisiting region');
