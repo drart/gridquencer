@@ -1,3 +1,6 @@
+
+var Cell = require('./cell');
+
 exports.Grid = function(){
 
 	this.rows = 8;
@@ -8,9 +11,16 @@ exports.Grid = function(){
 	this.selectedRegion = null;
 	this.allowOverlap = false;
 
-	//for (var i = 0; i < this.rows * this.columns; i++){
-	//		this.thegrid[i] = undefined;
-	//}
+	for ( var x = 0; x < this.columns; x++){
+		for( var y = 0; y < this.rows; y++){
+			var i = x + ( this.columns * y );
+			this.thegrid[i] = new Cell.Cell(x, y);;
+			this.thegrid[i].linkedRegions = []; // TODO use Object.assign with all mixins
+			this.thegrid[i].getRegions = function(){ return this.linkedRegions };
+		}
+	}
+
+	console.log( this.thegrid );
 }
 
 exports.Grid.prototype.printUnemptyCells = function(){
@@ -25,48 +35,35 @@ exports.Grid.prototype.printUnemptyCells = function(){
 
 exports.Grid.prototype.addRegion = function(region){
 	// todo make sure it is within bounds?  //this.printUnemptyCells();
+	var overlappingRegions = [];
 
-	if(this.allowOverlap){
-		this.regions.push(region);
-	}else{
-		var doesOverlap = this.doesOverlap( region );
-		console.log( "region overlapping: " + doesOverlap );
+	// TODO this.allowOverlap check
 
-		// todo check to see that it doesn't overlap with more than one region? 
+	// check all cells in region for overlapping
+	for ( var i = 0; i < region.steps.length; i++ ){
 
-		if( doesOverlap ){
-			var overlappingRegion = this.thegrid[ region.steps[0].y*8 + region.steps[0].x ].region; 
-	
-			if( overlappingRegion !== undefined ){
-				if( overlappingRegion.onBeat( region.steps[0] ) ){ // adjust a beat
-					
-					overlappingRegion.steps.forEach( function(cell){
-						this.thegrid[cell.y*8 + cell.x]  = undefined;	
-					},this);
-					
-					overlappingRegion.mergeRegion( region );
-					region = overlappingRegion;
-
-				}else{
-					return undefined;
-				}
-			}		
-		}else{
-			this.regions.push(region);
-		}
+		var thecell = this.getCell( region.steps[i] );			
+		var regions = thecell.getRegions();		
+		overlappingRegions = overlappingRegions.concat( regions );
 	}
 
-	// todo: what if region exists? this will create weird behaviours?
-       region.steps.forEach( function(cell){
-               this.thegrid[ (cell.y*8) + cell.x] = { 
-                       region: region,
-                       cell: cell
-               };
-       }, this);
+	if ( overlappingRegions.length === 0 ){
+		this.regions.push( region );
+		for( var i = 0; i < region.steps.length; i++ ){
+			thecell = this.getCell( region.steps[i] );
+			thecell.linkedRegions.push( region );		
+			console.log( thecell );
+		}
+	}else{
+		console.log( overlappingRegions );
+	}
 
-	this.printUnemptyCells();
+	console.log( this.thegrid );
+	return overlappingRegions;
+};
 
-	return region;
+exports.Grid.prototype.getCell = function( cell ){
+	return this.thegrid[ (cell.y*8) + cell.x ];
 };
 
 exports.Grid.prototype.selectRegion = function(region){
@@ -74,39 +71,8 @@ exports.Grid.prototype.selectRegion = function(region){
 };
 
 
-exports.Grid.prototype.moveRegion = function(region,newOrigin){
-
-};
-
 exports.Grid.prototype.selectCell = function( cell ){
 	this.selectedCell = cell;
-};
-
-exports.Grid.prototype.doesOverlap = function(region){
-
-	var grid = this.thegrid;
-
-	for ( var i = 0; i < region.steps.length; i++){
-		if( grid[ region.steps[i].y*8 + region.steps[i].x] !== undefined){
-			return true;
-		}
-	}
-	return false;
-};
-
-exports.Grid.prototype.overlappingRegions = function( newRegion ){
-	var overlappingRegions = [];
-	
-	// if found a region check to see it doesn't already exist in the array
-	this.regions.forEach(function(region){
-		region.rows.forEach(function(row){
-			row.forEach(function(cell){
-				// if overlap overlappingRegions.push(region)					
-			});
-		});
-	});	
-
-	return overlappingRegions;
 };
 
 exports.Grid.prototype.modifyRegion = function(region){

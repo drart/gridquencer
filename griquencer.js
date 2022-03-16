@@ -36,8 +36,6 @@ function setup(){
 			gridDisplay.openPort(i);
 			blankGridDisplay();
 
-
-
 			/// sequencerOut - new midi.Output();
 			/// sequencerOut.openVirtualPort('griquencer');
 		}
@@ -52,14 +50,6 @@ function setup(){
 		//console.log('beat');
 	});	
 }
-
-function addCell( midimsg ){
-	var newCell = new Cell.Cell();
-	newCell.fromMIDINote( midimsg );
-
-	padsDown.push( newCell );
-}
-
 function createRegion( padsdown ){
 	
 	var region = new Region.Region();
@@ -95,30 +85,34 @@ function createSequence( region ){
 function pushControllerMidiEvent( deltaTime, midimsg ){
 
 	if (midimsg[0] === 144){ // NoteOn
-		addCell(midimsg);
+
+		var newCell = new Cell.Cell();
+		newCell.fromMIDINote( midimsg );
+
+		padsDown.push( newCell );
+		return;
 	}
 	
 	if (midimsg[0] === 128){// NoteOff
-		//outlet(0, [144, midimsg[1], 0]);	
 
 		if ( padsDown.length === 0 ){
 			return;
 		}
 		
 		var newRegion = createRegion( padsDown );
-		var resultingRegion = grid.addRegion( newRegion );
-	
-		if( resultingRegion ){
-			var seq = createSequence( resultingRegion, grid.regions.length-1 );
+		var overlappingRegions = grid.addRegion( newRegion ); 
+
+		if ( overlappingRegions.length ==  0 ){
+			// old code var seq = createSequence( resultingRegion, grid.regions.length-1 );
+			console.log( ' added region ' );
 		}else{
-			console.log('whoopsie');
+			console.log('region overlapped with exisiting region');
 		}
 		
 		updatePushController();
 		padsDown = [];
 	}	
 }
-
 
 function updatePushController(){
 	blankGridDisplay();
