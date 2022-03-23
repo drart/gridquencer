@@ -70,6 +70,7 @@ function createSequence( region ){
 	Seq.queueSequence( sequence );
 	Seq.selectSequence( sequence );
 
+	/*
 	// TODO This nees to be more sensible
 	sequence.events.on('trigger', function(e){ 
 		sendGrid(e, 10 );
@@ -78,6 +79,17 @@ function createSequence( region ){
 			sendGrid( e, sequence.colour );
 			sequencerOut.send([144, 48 + sequence.colour, 0]);
 		}, 100 );
+	});
+	*/
+
+
+	sequence.events.on('noteOn', function(e){
+		console.log(e);
+		sendGrid(e.gridcell, 10);
+		sequencerOut.send([144, 48 + sequence.colour, 127]); // TODO fix this
+	});
+	sequence.events.on('noteOff', function(e){
+		sendGrid(e.gridcell, sequence.colour);
 	});
 }
 

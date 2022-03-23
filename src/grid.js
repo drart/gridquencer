@@ -90,6 +90,7 @@ exports.Grid.prototype.removeRegion = function(region){
 	}, this);
 	
 
+	// TODO test in ES5 environment
 	var regionIndex = this.regions.findIndex( function( region ){
 		return JSON.stringify( this.regions[i] ) == JSON.stringify( region );
 	});
