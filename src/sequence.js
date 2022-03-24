@@ -2,13 +2,13 @@ const events = require("events");
 
 exports.Sequence = function(){
 
-	this.steps = {};
+	//this.steps = {};
 	this.tickTime = 0;
 	this.beats = 1;
 	this.ticksPerBeat= 480;
 	this.mute = false;
 	this.loop = false;
-	this.sync = "tempo";
+	//this.sync = "tempo";
 	//this.direction = "forward";
 	this.playing = false;
 	this.currentstep = undefined;
@@ -32,75 +32,47 @@ exports.Sequence = function(){
 	};
 };
 
+exports.Sequence.prototype.regionToSequence = function(region){
 
-/// converts an array in region.rows format to a sequence
-exports.Sequence.prototype.arrayToSequence= function(arr){
-
-	if (!Array.isArray(arr)){
+	if (!Array.isArray(region)){
 		console.log('warning: arrays must be used for sequences');
 		return -1;
 	}
 
-	if( Array.isArray(arr[0]) ){ // multibeat sequence
-		this.beats = arr.length;	
-		for ( let b = 0; b < arr.length; b++){
-			for ( let i = 0; i < arr[b].length; i++){
-				this.steps[ (this.ticksPerBeat * b) + Math.floor( (this.ticksPerBeat/arr[b].length) * i ) ] = arr[b][i];
-			}
-		}
-	}else{ // single beat sequence
-		for( let i = 0; i < arr.length; i++ ){
-			this.steps[ this.ticksPerBeat * i] = arr[i];
-		}
-	}
-
-
-	this.cellArrayToSequence( arr );
-
-};
-
-
-exports.Sequence.prototype.cellArrayToSequence = function(cellArray){
-
-	if (!Array.isArray(cellArray)){
-		console.log('warning: arrays must be used for sequences');
-		return -1;
-	}
-
-	if( Array.isArray(cellArray[0]) ){ // multibeat sequence
-		this.beats = cellArray.length;	
-		this.length = cellArray.length;
-		for ( let b = 0; b < cellArray.length; b++){
-			for ( let i = 0; i < cellArray[b].length; i++){
+	if( Array.isArray(region[0]) ){ // multibeat sequence
+		this.beats = region.length;	
+		for ( let b = 0; b < region.length; b++){
+			for ( let i = 0; i < region[b].length; i++){
 				var startTick = b * this.ticksPerBeat;
-				startTick += (i/cellArray[b].length) * this.ticksPerBeat;
+				startTick += (i/region[b].length) * this.ticksPerBeat;
 				startTick = Math.floor( startTick );
 
-				var endTick =  this.ticksPerBeat / cellArray[b].length ;
+				var endTick =  this.ticksPerBeat / region[b].length ;
 				endTick += startTick;	
 				endTick = Math.floor( endTick );
 				endTick = endTick % (this.beats * this.ticksPerBeat); // handle case where notes are longer than the length of the sequence
 
-				this.notes.push( Object.assign( {start_tick:startTick, end_tick:endTick, gridcell: cellArray[b][i]}, this._note, {pitch: Math.random()} ) );
+				this.notes.push( Object.assign( {start_tick:startTick, end_tick:endTick, gridcell: region[b][i]}, this._note ));
 			}
 		}
 	}else{ // single beat sequence
 		this.beats = 1;
-		this.length = 1;
-		for( let i = 0; i < cellArray.length; i++ ){
-			var startTick = i / cellArray.length;
+		for( let i = 0; i < region.length; i++ ){
+			var startTick = i / region.length;
 			startTick *= this.ticksPerBeat;
 			startTick = Math.floor( startTick );
 
-			var endTick = this.ticksPerBeat / cellArray.length;
+			var endTick = this.ticksPerBeat / region.length;
 			endTick *= this.ticksPerBeat;
 			endTick += startTick;
 			endTick = Math.floor( endTick );
 			endTick = endTick % this.ticksPerBeat;
 			
-			this.notes.push( Object.assign( {start_tick: startTick, end_tick: endTick, gridcell: cellArray[i]}, this._note ) );
+			this.notes.push( Object.assign( {start_tick: startTick, end_tick: endTick, gridcell: region[i]}, this._note ) );
 		}
 	}
+
+	this.length = this.beats * this.ticksPerBeat;
 
 	for( var i = 0; i < this.notes.length; i++){
 		if( this.ticks[this.notes[i].start_tick] === undefined ){
@@ -123,19 +95,15 @@ exports.Sequence.prototype.tick = function(){
 	this.tickTime++;
 
 	if ( this.playing === true ){
-		this.tickTime = (this.loop === true )? this.tickTime % (this.beats * this.ticksPerBeat) : this.tickTime;
+		this.tickTime = (this.loop === true )? this.tickTime % this.length : this.tickTime;
 
 	} else {
 		return;
 	}
 
-	if( this.steps[ this.tickTime ] !== undefined ){
-		this.events.emit('trigger', this.steps[this.tickTime]);
-
+	if( this.ticks[ this.tickTime ] !== undefined ){
 		for (var i = 0; i < this.ticks[ this.tickTime ].length; i++){
 			this.events.emit(this.ticks[this.tickTime][i].type, this.ticks[this.tickTime][i]);
 		}
-		return( this.steps[this.tickTime] );
 	}
-
 };

@@ -26,7 +26,7 @@ exports.Sequencer = function(){
 		}
 
 		for ( let s of seq.sequences ){
-			let evnt = s.tick();
+			s.tick();
 		}
 	
 		seq.ticktime++;

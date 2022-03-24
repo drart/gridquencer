@@ -45,7 +45,6 @@ function setup(){
 		}
 	}
 
-
 	Seq.events.on('beat', function(){
 		//console.log('beat');
 	});	
@@ -63,33 +62,22 @@ function createSequence( region ){
 
 	var sequence = new Sequence.Sequence();
 
-	sequence.arrayToSequence( region.rows );
+	sequence.regionToSequence( region.rows );
 	sequence.playing = true;
 	sequence.loop = true;
-	sequence.colour = Seq.sequences.length + 1;
-	Seq.queueSequence( sequence );
+	Seq.queueSequence( sequence ); 
 	Seq.selectSequence( sequence );
+	sequence.colour = Seq.sequences.length + 1;
 
-	/*
-	// TODO This nees to be more sensible
-	sequence.events.on('trigger', function(e){ 
-		sendGrid(e, 10 );
-		sequencerOut.send([144, 48 + sequence.colour, 127]);
-		setTimeout( function(){
-			sendGrid( e, sequence.colour );
-			sequencerOut.send([144, 48 + sequence.colour, 0]);
-		}, 100 );
-	});
-	*/
-
-
+	// TODO better way of changing sequence channel
 	sequence.events.on('noteOn', function(e){
-		console.log(e);
+		//console.log(e);
 		sendGrid(e.gridcell, 10);
-		sequencerOut.send([144, 48 + sequence.colour, 127]); // TODO fix this
+		sequencerOut.send([144 + sequence.colour, e.pitch, e.velocity]); 
 	});
 	sequence.events.on('noteOff', function(e){
 		sendGrid(e.gridcell, sequence.colour);
+		sequencerOut.send([128 + sequence.colour, e.pitch , e.release_velocity]); 
 	});
 }
 
@@ -136,44 +124,6 @@ function updatePushController(){
 		});
 	});
 };
-
-/*
-// receives virtual MIDI messages from VCV rack
-function syncSequencer( deltaTime, message ){
-
-
-	/// TODO respond to region, rather than hardcoded a sequence
-	if(message[0] === 144 && message[1] !== 40){
-		if ( pulseCount > 7 ){
-			pulseCount = 0;
-		}
-
-		//sendGrid( pulseCount, 8 );
-		let p = pulseCount;
-		setTimeout( function(p){
-			sendGrid( p , 2 );
-		}, 40, p);
-		
-		sequencerOut.send([176, 0, 26 + pulseCount * 13]);
-
-		if( pulseCount < 3 ) {
-			sequencerOut.send([176, 1, 26]); // 2V === 1 step
-		}else{
-			sequencerOut.send([176, 1, 79]); // 6v === 5 steps
-		}
-		pulseCount++;
-
-	}
-
-	if(message[0] === 144 && message[1] === 40){
-		console.log('vcv gate clock');
-		sequencerOut.send([176, 2, 127]);
-		setTimeout( function(){
-			sequencerOut.send([176, 2, 0]);
-		}, 20 );
-	}
-}
-*/
 
 function sendGrid(gridpos, colour){
 
