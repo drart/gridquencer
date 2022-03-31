@@ -36,8 +36,6 @@ function setup(){
 			gridDisplay.openPort(i);
 			blankGridDisplay();
 
-
-
 			/// sequencerOut - new midi.Output();
 			/// sequencerOut.openVirtualPort('griquencer');
 		}
@@ -47,17 +45,9 @@ function setup(){
 		}
 	}
 
-
 	Seq.events.on('beat', function(){
 		//console.log('beat');
 	});	
-}
-
-function addCell( midimsg ){
-	var newCell = new Cell.Cell();
-	newCell.fromMIDINote( midimsg );
-
-	padsDown.push( newCell );
 }
 
 function createRegion( padsdown ){
@@ -72,46 +62,52 @@ function createSequence( region ){
 
 	var sequence = new Sequence.Sequence();
 
-	sequence.arrayToSequence( region.rows );
+	sequence.regionToSequence( region.rows );
 	sequence.playing = true;
 	sequence.loop = true;
-	sequence.colour = Seq.sequences.length + 1;
-	Seq.queueSequence( sequence );
+	Seq.queueSequence( sequence ); 
 	Seq.selectSequence( sequence );
+	sequence.colour = 4 * (Seq.sequences.length+1) + 3;
 
-	//console.log(sequence);
-	//console.log( Seq.sequences.length );
 
-	sequence.events.on('trigger', function(e){ 
-		sendGrid(e, 10 );
-		sequencerOut.send([144, 48 + sequence.colour, 127]);
-		setTimeout( function(){
-			sendGrid( e, sequence.colour );
-			sequencerOut.send([144, 48 + sequence.colour, 0]);
-		}, 100 );
+	// TODO better way of changing sequence channel
+	sequence.events.on('noteOn', function(e){
+		//console.log(e);
+		sendGrid(e.gridcell, sequence.colour-2);
+		sequencerOut.send([144 + sequence.colour, e.pitch, e.velocity]); 
 	});
+	sequence.events.on('noteOff', function(e){
+		sendGrid(e.gridcell, sequence.colour);
+		sequencerOut.send([128 + sequence.colour, e.pitch , e.release_velocity]); 
+	});
+
 }
 
 function pushControllerMidiEvent( deltaTime, midimsg ){
 
 	if (midimsg[0] === 144){ // NoteOn
-		addCell(midimsg);
+
+		var newCell = new Cell.Cell();
+		newCell.fromMIDINote( midimsg );
+
+		padsDown.push( newCell );
+		return;
 	}
 	
 	if (midimsg[0] === 128){// NoteOff
-		//outlet(0, [144, midimsg[1], 0]);	
 
 		if ( padsDown.length === 0 ){
 			return;
 		}
 		
 		var newRegion = createRegion( padsDown );
-		var resultingRegion = grid.addRegion( newRegion );
-	
-		if( resultingRegion ){
-			var seq = createSequence( resultingRegion, grid.regions.length-1 );
+		var overlappingRegions = grid.addRegion( newRegion ); 
+
+		if ( overlappingRegions.length ==  0 ){
+			newSequence = createSequence( newRegion );
+			console.log( ' added region ' );
 		}else{
-			console.log('whoopsie');
+			console.log('region overlapped with exisiting region');
 		}
 		
 		updatePushController();
@@ -119,56 +115,17 @@ function pushControllerMidiEvent( deltaTime, midimsg ){
 	}	
 }
 
-
 function updatePushController(){
 	blankGridDisplay();
 
 	grid.regions.forEach(function(region, regionIndex){
 		region.rows.forEach(function(row){
 			row.forEach(function(cell){
-				sendGrid( cell, regionIndex + 1 );
+				sendGrid( cell,(regionIndex+1)*4 + 3 );
 			});
 		});
 	});
 };
-
-/*
-// receives virtual MIDI messages from VCV rack
-function syncSequencer( deltaTime, message ){
-
-
-	/// TODO respond to region, rather than hardcoded a sequence
-	if(message[0] === 144 && message[1] !== 40){
-		if ( pulseCount > 7 ){
-			pulseCount = 0;
-		}
-
-		//sendGrid( pulseCount, 8 );
-		let p = pulseCount;
-		setTimeout( function(p){
-			sendGrid( p , 2 );
-		}, 40, p);
-		
-		sequencerOut.send([176, 0, 26 + pulseCount * 13]);
-
-		if( pulseCount < 3 ) {
-			sequencerOut.send([176, 1, 26]); // 2V === 1 step
-		}else{
-			sequencerOut.send([176, 1, 79]); // 6v === 5 steps
-		}
-		pulseCount++;
-
-	}
-
-	if(message[0] === 144 && message[1] === 40){
-		console.log('vcv gate clock');
-		sequencerOut.send([176, 2, 127]);
-		setTimeout( function(){
-			sequencerOut.send([176, 2, 0]);
-		}, 20 );
-	}
-}
-*/
 
 function sendGrid(gridpos, colour){
 

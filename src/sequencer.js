@@ -26,7 +26,7 @@ exports.Sequencer = function(){
 		}
 
 		for ( let s of seq.sequences ){
-			let evnt = s.tick();
+			s.tick();
 		}
 	
 		seq.ticktime++;
@@ -45,37 +45,25 @@ exports.Sequencer.prototype.addSequence = function( sequence ){
 };
 
 exports.Sequencer.prototype.setTempo = function(){}; 
-exports.Sequencer.prototype.getSequence = function(){};
 exports.Sequencer.prototype.removeSequence = function(){};
 exports.Sequencer.prototype.muteSequence = function(){};
-exports.Sequencer.prototype.selectSequence = function(){};
 
-
-/*
-
-adam.sequencer.selectSequence = function (that, seq) {
-    if (that.getsequence(seq) !== -1) {
-        that.model.selectedsequence = seq;
-        return true;
-    } else {
-        return false;
-    }
+exports.Sequencer.prototype.selectSequence = function(seq){
+	if ( this.getSequence( seq ) !== null ){
+		this.selectedSequence  = seq;
+		return true;
+	}
+	return false;
 };
 
+exports.Sequencer.prototype.getSequence = function(seq){
+	var indx = this.sequences.indexOf( seq );
+	return ( indx !== -1 ) ? this.sequences[indx] :  null;
+};
+
+/*
 adam.sequencer.muteSequence = function (that, seq) {
     that.getsequence(seq).mute = true;
     return true;
 };
-
-adam.sequencer.getSequence = function (that, seq) {
-    let result = that.model.sequences.indexOf(seq);
-
-    if (result !== -1) {
-        result = that.model.sequences[result];
-        return result;
-    } else {
-        return undefined;
-    }
-};
-
 */
