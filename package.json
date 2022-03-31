@@ -5,7 +5,12 @@
     "description": "",
     "author": "Adam Tindale",
     "dependencies": {
+        "ableton-push-canvas-display": "^1.0.1",
+        "canvas": "^2.9.0",
+        "death": "^1.1.0",
         "events": "^3.3.0",
-        "midi": "^2.0.0"
+        "midi": "^2.0.0",
+        "osc": "^2.4.2",
+        "usb": "^2.1.2"
     }
 }
