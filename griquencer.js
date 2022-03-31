@@ -67,18 +67,20 @@ function createSequence( region ){
 	sequence.loop = true;
 	Seq.queueSequence( sequence ); 
 	Seq.selectSequence( sequence );
-	sequence.colour = Seq.sequences.length + 1;
+	sequence.colour = 4 * (Seq.sequences.length+1) + 3;
+
 
 	// TODO better way of changing sequence channel
 	sequence.events.on('noteOn', function(e){
 		//console.log(e);
-		sendGrid(e.gridcell, 10);
+		sendGrid(e.gridcell, sequence.colour-2);
 		sequencerOut.send([144 + sequence.colour, e.pitch, e.velocity]); 
 	});
 	sequence.events.on('noteOff', function(e){
 		sendGrid(e.gridcell, sequence.colour);
 		sequencerOut.send([128 + sequence.colour, e.pitch , e.release_velocity]); 
 	});
+
 }
 
 function pushControllerMidiEvent( deltaTime, midimsg ){
@@ -102,7 +104,7 @@ function pushControllerMidiEvent( deltaTime, midimsg ){
 		var overlappingRegions = grid.addRegion( newRegion ); 
 
 		if ( overlappingRegions.length ==  0 ){
-			createSequence( newRegion );
+			newSequence = createSequence( newRegion );
 			console.log( ' added region ' );
 		}else{
 			console.log('region overlapped with exisiting region');
@@ -119,7 +121,7 @@ function updatePushController(){
 	grid.regions.forEach(function(region, regionIndex){
 		region.rows.forEach(function(row){
 			row.forEach(function(cell){
-				sendGrid( cell, regionIndex + 1 );
+				sendGrid( cell,(regionIndex+1)*4 + 3 );
 			});
 		});
 	});
