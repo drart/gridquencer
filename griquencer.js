@@ -68,17 +68,17 @@ function createSequence( region ){
 	Seq.queueSequence( sequence ); 
 	Seq.selectSequence( sequence );
 	sequence.colour = 4 * (Seq.sequences.length+1) + 3;
+	sequence.channel = Seq.sequences.length;
 
 
 	// TODO better way of changing sequence channel
 	sequence.events.on('noteOn', function(e){
-		//console.log(e);
 		sendGrid(e.gridcell, sequence.colour-2);
-		sequencerOut.send([144 + sequence.colour, e.pitch, e.velocity]); 
+		sequencerOut.send([144 + sequence.channel , e.pitch, e.velocity]); 
 	});
 	sequence.events.on('noteOff', function(e){
 		sendGrid(e.gridcell, sequence.colour);
-		sequencerOut.send([128 + sequence.colour, e.pitch , e.release_velocity]); 
+		sequencerOut.send([128 + sequence.channel, e.pitch , e.release_velocity]); 
 	});
 
 }
