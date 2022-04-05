@@ -50,7 +50,11 @@ exports.Sequence.prototype.regionToSequence = function(region){
 				var endTick =  this.ticksPerBeat / region[b].length ;
 				endTick += startTick;	
 				endTick = Math.floor( endTick );
-				endTick = endTick % (this.beats * this.ticksPerBeat); // handle case where notes are longer than the length of the sequence
+				//endTick = endTick % (this.beats * this.ticksPerBeat); // handle case where notes are longer than the length of the sequence
+				if( endTick >= this.beats * this.ticksPerBeat){
+					endTick = (this.beats * this.ticksPerBeat) - 1 ;
+				}
+
 
 				this.notes.push( Object.assign( {start_tick:startTick, end_tick:endTick, gridcell: region[b][i]}, this._note ));
 			}
