@@ -45,7 +45,12 @@ exports.Sequencer.prototype.addSequence = function( sequence ){
 };
 
 exports.Sequencer.prototype.setTempo = function(){}; 
-exports.Sequencer.prototype.removeSequence = function(){};
+
+exports.Sequencer.prototype.removeSequence = function(seq){	
+	this.sequences = this.sequences.filter(function(s){
+		return s !== seq;
+	});		
+};
 exports.Sequencer.prototype.muteSequence = function(){};
 
 exports.Sequencer.prototype.selectSequence = function(seq){

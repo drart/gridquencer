@@ -111,3 +111,4 @@ exports.Sequence.prototype.tick = function(){
 		}
 	}
 };
+

@@ -24,6 +24,9 @@ var padsDown = [];
 
 var Seq = new Sequencer.Sequencer();
 
+
+var mode = "new";
+
 function setup(){
 
 	for( let i = 0; i < input.getPortCount(); i++){
@@ -36,8 +39,10 @@ function setup(){
 			gridDisplay.openPort(i);
 			blankGridDisplay();
 
-			/// sequencerOut - new midi.Output();
+			/// sequencerOut = new midi.Output();
 			/// sequencerOut.openVirtualPort('griquencer');
+
+			setupPushLights();
 		}
 		if ( input.getPortName(i) === "IAC Driver Bus 1" ){
 			sequencerOut = new midi.Output();	
@@ -48,6 +53,13 @@ function setup(){
 	Seq.events.on('beat', function(){
 		//console.log('beat');
 	});	
+}
+
+
+function setupPushLights(){
+	gridDisplay.send([176, 60, 127] ); // mute button
+	gridDisplay.send([176, 118, 127] ); // delete button
+	gridDisplay.send([176, 87, 127] ); // new button
 }
 
 function createRegion( padsdown ){
@@ -107,12 +119,23 @@ function pushControllerMidiEvent( deltaTime, midimsg ){
 			newSequence = createSequence( newRegion );
 			console.log( ' added region ' );
 		}else{
+			console.log( overlappingRegions );
 			console.log('region overlapped with exisiting region');
 		}
 		
 		updatePushController();
 		padsDown = [];
 	}	
+
+	if (midimsg[0] === 176 && midimsg[2] === 127){
+		if(midimsg[1] === 87 ){
+			mode = "new";
+		}	
+		if(midimsg[1] === 118 ){
+			mode = "delete";
+		}
+		console.log( midimsg );
+	}
 }
 
 function updatePushController(){
