@@ -4,14 +4,15 @@
 #include "Cell.h"
 #include "Region.h" 
 #include "GridCell.h"
-#include <list>
+#include <vector>
 
 class Grid {
   public: 
     Grid();
+//  private: 
     char _rows;
     char _columns;
-    std::list<GridCell> grid;
+    std::vector<GridCell> grid;
     Cell _selectedCell;
     Region _selectedRegion;
     bool _allowOverlap;
