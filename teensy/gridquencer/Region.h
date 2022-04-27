@@ -1,15 +1,23 @@
 #ifndef G_REGION
 #define G_REGION
 
-#include <list>
+#include <vector>
 #include "Cell.h"
+#include "GridCell.h"
 
 class Region{
   public: 
     Region();
-    Region(Cell start, Cell end);
-    GridCell( char x, char y);
-    std::list<Cell> cells;
+    Region(Cell startPoint, Cell endPoint);
+  private:
+    std::vector<Cell> cells;
+    int beats;
+    std::vector<std::vector<Cell>> rows;
+    std::vector<Cell> steps;
+    Cell bottomLeft;
+    Cell bottomRight;
+    Cell topLeft;
+    Cell topRight;
 };
 
 
