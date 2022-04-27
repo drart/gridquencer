@@ -4,11 +4,10 @@
 Grid::Grid(){
   for( char x = 0; x < _columns; x++){
     for( char y = 0; y < _rows; y++){
-      GridCell cell;
-      cell.x = x;
-      cell.y = y;
-      //char i = x + ( y * _columns );
-      grid.push_back( cell );
+      GridCell gridcell;
+      gridcell.cell._x = x;
+      gridcell.cell._y = y;
+      grid.push_back( gridcell );
     } 
   }
 }
@@ -25,6 +24,11 @@ bool Grid::addRegion(Cell start, Cell end){
   }
   
   // find bottom left and top right
+
+    for all cells in region
+     grid.getCell(x,y) == cell 
+     if not then return false 
+     if true then add region to grid and add region reference to each gridcell
   */
 
   return true;

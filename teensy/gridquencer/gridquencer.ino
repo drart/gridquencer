@@ -89,6 +89,8 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   padsDown.push_back( pushNoteToCell(note) );
   if(padsDown.size() == 2){
     if (grid.addRegion( padsDown[0], padsDown[1] ) ){
+      // std::vector<int> steps = newRegion.regionToVector();
+      /// Sequence newSequence( steps );
       // create a sequence and add to sequencer
     }
   }

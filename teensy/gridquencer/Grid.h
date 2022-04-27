@@ -7,10 +7,9 @@
 #include <vector>
 
 struct GridCell {
-  int x;
-  int y;
-  Region * _region;
-  //Sequence * _sequence = NULL;
+  Cell cell;
+  Region * _region = 0;
+  //Sequence * _sequence = 0;
 };
 
 
