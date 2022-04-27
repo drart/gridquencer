@@ -3,8 +3,16 @@
 
 #include "Cell.h"
 #include "Region.h" 
-#include "GridCell.h"
+//#include "Sequence.h"
 #include <vector>
+
+struct GridCell {
+  int x;
+  int y;
+  Region * _region;
+  //Sequence * _sequence = NULL;
+};
+
 
 class Grid {
   public: 
@@ -18,9 +26,8 @@ class Grid {
     std::vector<GridCell> grid;
     std::vector<Region> _regions;
     
-    Cell & _selectedCell;
-    Region & _selectedRegion;
+    Cell * _selectedCell;
+    Region * _selectedRegion;
 };
-
 
 #endif

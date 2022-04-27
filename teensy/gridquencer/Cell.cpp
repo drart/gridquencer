@@ -9,3 +9,6 @@ Cell::Cell(){
   _x = 0;
   _y = 0;
 }
+
+
+// == overload

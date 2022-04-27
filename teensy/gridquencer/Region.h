@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "Cell.h"
-#include "GridCell.h"
 
 class Region{
   public: 
@@ -14,7 +13,7 @@ class Region{
     Cell bottomRight;
     Cell topRight;
     Cell topLeft;  
-    std::vector<GridCell> _cells;
+    std::vector<Cell> _cells; // move this to GridCell
 };
 
 
