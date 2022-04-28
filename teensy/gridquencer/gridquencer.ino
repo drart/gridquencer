@@ -6,7 +6,7 @@
 //-----------------------------------------*/
 #include "USBHost_t36.h"
 #include <MIDI.h>
-#include <TimerThree.h>
+#include <TimerOne.h>
 #include <vector>
 
 #include "Cell.h"
@@ -15,10 +15,11 @@
 #include "Sequencer.h"
 #include "Sequence.h"
 
-IntervalTimer myTimer;
 
+IntervalTimer myTimer;
 USBHost myusb;
 MIDIDevice_BigBuffer midi1(myusb);
+Sequencer sequencer;
 //// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // used for hardware MIDI output
@@ -40,6 +41,7 @@ void setup()
   Serial.begin(9600);
   Serial.println("USB Host Testing");
   myusb.begin();
+  
 
   MIDI.begin(MIDI_CHANNEL_OMNI);
 
@@ -54,6 +56,8 @@ void setup()
   Serial.println( midi1.idVendor() );
   //Serial.println( String((char)midi1.product()).c_str() );
 
+  sequencer = Sequencer();
+
   period = (60 / bpm ) * microsPerSecond;  
   tickPeriod = period / 480;
 //  Serial.print("Default period: "); 
@@ -62,7 +66,29 @@ void setup()
   
 }
 
+void moveRegion(byte[] midimsg){
+  if(midimsg[1] == 45) {
+    grid.requestMoveRegion(grid._selectedRegion,1,0);
+  }
+  else if(midimsg[1] == 46) {
+    grid.requestMoveRegion(grid._selectedRegion,-1,0);
+  }
+  else if(midimsg[1] == 47) {
+    grid.requestMoveRegion(grid._selectedRegion,0,1);
+  }
+  else if(midimsg[1] == 48) {
+    grid.requestMoveRegion(grid._selectedRegion,0,1);
+  }
+}
 
+
+void blankGridDisplay(){
+  for ( int x = 0; x < 8; x++){
+    for ( int y = 0; y < 8; y++ ){
+      //sendGrid( {x:x, y:y}, 0 );
+    }
+  }
+}
 
 /*
 void sequencer(){
@@ -106,6 +132,13 @@ void OnNoteOn(byte channel, byte note, byte velocity)
       /// Sequence newSequence( steps );
       // create a sequence and add to sequencer
     }
+    
+//  if(padsDown.size() == 1){
+//    if(midimsg[0] == 176  && midimsg[2] == 127){
+//      moveRegion(midimsg);
+//      }
+//    
+//    }
   }
 }
 

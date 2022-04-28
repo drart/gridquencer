@@ -1,5 +1,5 @@
 #include "Grid.h"
-
+#include <vector>
 
 Grid::Grid(){
 
@@ -35,3 +35,37 @@ bool Grid::addRegion(Cell start, Cell end){
 
   return true;
 }
+
+bool Grid::requestMoveRegion(Region* _region, int dx, int dy){
+
+  std::vector<Region> overlappingRegions;
+
+  // check all cells in region for overlapping
+  for ( int i = 0; i < _region->steps.size(); i++ ){
+
+    //Cell thecell = getCell( region.steps[i]);   
+    //thecell.x +=dx;
+    //thecell.y +=dy; 
+    //var regions = thecell.getRegions();   
+    //overlappingRegions = overlappingRegions.concat( regions );
+  }
+  //Serial.println(overlappingRegions.length);
+
+  if ( overlappingRegions.size() <= 1 ){
+
+    for(int i=0; i< _region->steps.size();i++){
+        for(int j=0; j<_region->rows[i].size();j++){
+          _region->rows[i][j]._x = _region->rows[i][j]._x + dx;
+          _region->rows[i][j]._y = _region->rows[i][j]._y + dy;
+          }
+      
+      }
+
+    }
+  else{
+    //Serial.println("Region move request denied: Overlapping other region");
+  }
+  
+
+  return true;
+  }

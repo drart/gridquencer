@@ -17,16 +17,16 @@ class Grid {
   public: 
     Grid();
     bool addRegion(Cell start, Cell end);
+    bool requestMoveRegion(Region* region, int dx, int dy);
+    Cell * _selectedCell;
+    Region * _selectedRegion;
   private: 
     char _rows;
     char _columns;
     bool _allowOverlap;
-
     std::vector<GridCell> grid;
     std::vector<Region> _regions;
-    
-    Cell * _selectedCell;
-    Region * _selectedRegion;
+
 };
 
 #endif

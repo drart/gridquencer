@@ -8,7 +8,7 @@
 class Sequencer {
     public: 
         Sequencer();
-        Sequencer(float bpm)
+        Sequencer(float bpm);
         start();
         pause();
         stop();
