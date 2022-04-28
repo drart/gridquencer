@@ -9,5 +9,7 @@ class Cell {
     char _y;  
 };
 
+bool operator== (const Cell& c1, const Cell& c2);
+bool operator!= (const Cell& c1, const Cell& c2);
 
 #endif

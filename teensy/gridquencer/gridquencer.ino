@@ -5,7 +5,9 @@
 //
 //-----------------------------------------*/
 #include "USBHost_t36.h"
-#include <list>
+#include <MIDI.h>
+#include <TimerThree.h>
+#include <vector>
 
 #include "Cell.h"
 #include "Region.h" 
@@ -19,6 +21,8 @@ USBHost myusb;
 MIDIDevice_BigBuffer midi1(myusb);
 //// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
 
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // used for hardware MIDI output
+
 const int LEDPIN = LED_BUILTIN;
 int ledState = LOW;
 float bpm = 60.0f;
@@ -27,7 +31,8 @@ long period;
 long tickPeriod;
 
 Cell test( 10, 2);
-std::list<Cell> padsDown;
+std::vector<Cell> padsDown;
+Grid grid;
 
 void setup()
 {
@@ -36,10 +41,12 @@ void setup()
   Serial.println("USB Host Testing");
   myusb.begin();
 
+  MIDI.begin(MIDI_CHANNEL_OMNI);
+
   midi1.setHandleNoteOff(OnNoteOff);
   midi1.setHandleNoteOn(OnNoteOn);
   midi1.setHandleControlChange(OnControlChange);
-  //midi.setHandleAfterTouch();
+  //midi.setHandleAfterTouch(); // to be added later
 
   // push2midispec.md
   //#define ABLETON_VENDOR_ID 0x2982
@@ -55,6 +62,9 @@ void setup()
   
 }
 
+
+
+/*
 void sequencer(){
 
  if (ledState == LOW) {
@@ -69,14 +79,13 @@ void sequencer(){
   // sequencer.tick();
   
 } 
-
+*/
 
 void loop()
 {
   myusb.Task();
   midi1.read();
 }
-
 
 void OnNoteOn(byte channel, byte note, byte velocity)
 {
@@ -92,8 +101,11 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   
   padsDown.push_back( pushNoteToCell(note) );
   if(padsDown.size() == 2){
-       
-  
+    if (grid.addRegion( padsDown[0], padsDown[1] ) ){
+      // std::vector<int> steps = newRegion.regionToVector();
+      /// Sequence newSequence( steps );
+      // create a sequence and add to sequencer
+    }
   }
 }
 
