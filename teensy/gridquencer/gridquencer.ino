@@ -5,12 +5,15 @@
 //
 //-----------------------------------------*/
 #include "USBHost_t36.h"
+#include <MIDI.h>
 #include <TimerThree.h>
-#include <list>
+#include <vector>
 
 #include "Cell.h"
 #include "Region.h" 
 #include "Grid.h"
+#include "Sequencer.h"
+#include "Sequence.h"
 
 IntervalTimer myTimer;
 
@@ -18,22 +21,32 @@ USBHost myusb;
 MIDIDevice_BigBuffer midi1(myusb);
 //// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
 
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // used for hardware MIDI output
+
 const int LEDPIN = LED_BUILTIN;
 int ledState = LOW;
+float bpm = 60.0f;
+long microsPerSecond = 1000000;
+long period;
+long tickPeriod;
 
 Cell test( 10, 2);
-std::list<Cell> padsDown;
+std::vector<Cell> padsDown;
+Grid grid;
 
 void setup()
 {
 //  while (!Serial) ; // wait for Arduino Serial Monitor
+  Serial.begin(9600);
   Serial.println("USB Host Testing");
   myusb.begin();
+
+  MIDI.begin(MIDI_CHANNEL_OMNI);
 
   midi1.setHandleNoteOff(OnNoteOff);
   midi1.setHandleNoteOn(OnNoteOn);
   midi1.setHandleControlChange(OnControlChange);
-  //midi.setHandleAfterTouch();
+  //midi.setHandleAfterTouch(); // to be added later
 
   // push2midispec.md
   //#define ABLETON_VENDOR_ID 0x2982
@@ -41,29 +54,38 @@ void setup()
   Serial.println( midi1.idVendor() );
   //Serial.println( String((char)midi1.product()).c_str() );
 
-//  Timer3.initialize(150000);
-//  Timer3.attachInterrupt(sequencer);
+  period = (60 / bpm ) * microsPerSecond;  
+  tickPeriod = period / 480;
+//  Serial.print("Default period: "); 
+//  Serial.println(period);
+  myTimer.begin(sequencer, period);
+  
 }
 
 
 
+/*
 void sequencer(){
 
  if (ledState == LOW) {
     ledState = HIGH;
+//    midi1.sendNoteOn( 60, 100, 1 );
   } else {
     ledState = LOW;
+//    midi1.sendNoteOff( 60, 100, 1 );
   }
   digitalWrite(LEDPIN, ledState);
+  
+  // sequencer.tick();
+  
 } 
-
+*/
 
 void loop()
 {
   myusb.Task();
   midi1.read();
 }
-
 
 void OnNoteOn(byte channel, byte note, byte velocity)
 {
@@ -79,8 +101,11 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   
   padsDown.push_back( pushNoteToCell(note) );
   if(padsDown.size() == 2){
-       
-  
+    if (grid.addRegion( padsDown[0], padsDown[1] ) ){
+      // std::vector<int> steps = newRegion.regionToVector();
+      /// Sequence newSequence( steps );
+      // create a sequence and add to sequencer
+    }
   }
 }
 

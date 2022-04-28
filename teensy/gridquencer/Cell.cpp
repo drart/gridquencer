@@ -10,10 +10,14 @@ Cell::Cell(){
   _y = 0;
 }
 
+// ----------------------
+// OPERATOR OVERLOADING
+// ----------------------
 bool operator== (const Cell& c1, const Cell& c2){
   return (c1._x == c2._x && c1._y == c2._y);
 }
 
 bool operator!= (const Cell& c1, const Cell& c2){
   return (c1._x != c2._x || c1._y != c2._y);
+
 }
