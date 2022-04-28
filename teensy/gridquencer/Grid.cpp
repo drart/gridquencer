@@ -2,6 +2,8 @@
 
 
 Grid::Grid(){
+
+  // grid.reserve()? 
   for( char x = 0; x < _columns; x++){
     for( char y = 0; y < _rows; y++){
       GridCell cell = GridCell(x,y);

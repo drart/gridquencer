@@ -5,12 +5,13 @@
 //
 //-----------------------------------------*/
 #include "USBHost_t36.h"
-#include <TimerThree.h>
 #include <list>
 
 #include "Cell.h"
 #include "Region.h" 
 #include "Grid.h"
+#include "Sequencer.h"
+#include "Sequence.h"
 
 IntervalTimer myTimer;
 
@@ -20,6 +21,10 @@ MIDIDevice_BigBuffer midi1(myusb);
 
 const int LEDPIN = LED_BUILTIN;
 int ledState = LOW;
+float bpm = 60.0f;
+long microsPerSecond = 1000000;
+long period;
+long tickPeriod;
 
 Cell test( 10, 2);
 std::list<Cell> padsDown;
@@ -27,6 +32,7 @@ std::list<Cell> padsDown;
 void setup()
 {
 //  while (!Serial) ; // wait for Arduino Serial Monitor
+  Serial.begin(9600);
   Serial.println("USB Host Testing");
   myusb.begin();
 
@@ -41,20 +47,27 @@ void setup()
   Serial.println( midi1.idVendor() );
   //Serial.println( String((char)midi1.product()).c_str() );
 
-//  Timer3.initialize(150000);
-//  Timer3.attachInterrupt(sequencer);
+  period = (60 / bpm ) * microsPerSecond;  
+  tickPeriod = period / 480;
+//  Serial.print("Default period: "); 
+//  Serial.println(period);
+  myTimer.begin(sequencer, period);
+  
 }
-
-
 
 void sequencer(){
 
  if (ledState == LOW) {
     ledState = HIGH;
+//    midi1.sendNoteOn( 60, 100, 1 );
   } else {
     ledState = LOW;
+//    midi1.sendNoteOff( 60, 100, 1 );
   }
   digitalWrite(LEDPIN, ledState);
+  
+  // sequencer.tick();
+  
 } 
 
 
