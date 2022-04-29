@@ -9,20 +9,20 @@ class Sequencer {
     public: 
         Sequencer();
         Sequencer(float bpm);
-        start();
-        pause();
-        stop();
-        bpm(float bpm);
-        addSequence(Sequence s); 
-        removeSequence(Sequence s);
-        queueSequence(Sequence s);
-        muteSequence(Sequence s);
-        selectSequence(Sequence s);
+        void start();
+        void pause();
+        void stop();
+        float bpm(float bpm);
+        bool addSequence(Sequence * s); 
+        bool removeSequence(Sequence * s);
+        bool queueSequence(Sequence * s);
+        bool muteSequence(Sequence * s);
+        Sequence selectSequence(Sequence * s);
 
 
     private: 
         IntervalTimer _seqTimer;
-        tick();
+        void tick();
 
         float _bpm;
         std::vector<Sequence> _sequences;
@@ -31,6 +31,6 @@ class Sequencer {
 
         int _beatlength;
         int _tickTime; // should be a long or some other 64bit type? 
-}
+};
 
 #endif

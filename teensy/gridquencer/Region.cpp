@@ -1,5 +1,5 @@
 #include "Region.h"
-using namespace std;
+
 Region::Region(Cell firstPoint, Cell secondPoint){
 
   bottomLeft = Cell(std::min(firstPoint._x,secondPoint._x), std::min(firstPoint._y,secondPoint._y));

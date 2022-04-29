@@ -62,21 +62,21 @@ void setup()
   tickPeriod = period / 480;
 //  Serial.print("Default period: "); 
 //  Serial.println(period);
-  myTimer.begin(sequencer, period);
+//  myTimer.begin(sequencer, period);
   
 }
 
-void moveRegion(byte[] midimsg){
-  if(midimsg[1] == 45) {
+void moveRegion(byte channel, byte number, byte value){
+  if(number == 45) {
     grid.requestMoveRegion(grid._selectedRegion,1,0);
   }
-  else if(midimsg[1] == 46) {
+  else if(number == 46) {
     grid.requestMoveRegion(grid._selectedRegion,-1,0);
   }
-  else if(midimsg[1] == 47) {
+  else if(number == 47) {
     grid.requestMoveRegion(grid._selectedRegion,0,1);
   }
-  else if(midimsg[1] == 48) {
+  else if(number == 48) {
     grid.requestMoveRegion(grid._selectedRegion,0,1);
   }
 }

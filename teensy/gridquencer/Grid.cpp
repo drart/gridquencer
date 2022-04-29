@@ -53,19 +53,19 @@ bool Grid::requestMoveRegion(Region* _region, int dx, int dy){
 
   if ( overlappingRegions.size() <= 1 ){
 
-    for(int i=0; i< _region->steps.size();i++){
-        for(int j=0; j<_region->rows[i].size();j++){
+    for(int i=0; i < _region->steps.size(); i++){
+        for(int j=0; j < _region->rows[i].size(); j++){
           _region->rows[i][j]._x = _region->rows[i][j]._x + dx;
           _region->rows[i][j]._y = _region->rows[i][j]._y + dy;
-          }
+        }
       
-      }
-
     }
+
+  }
   else{
     //Serial.println("Region move request denied: Overlapping other region");
   }
   
 
   return true;
-  }
+}

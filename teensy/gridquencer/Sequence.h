@@ -2,13 +2,13 @@
 #define G_SEQUENCE
 
 #include "Region.h"
-
+#include <vector>
 
 class Sequence {
     public: 
         Sequence();
-        regionToSequence(Region r);
-        tick();
+        std::vector<int> regionToSequence(Region * r);
+        void tick();
         bool mute;
         bool loop;
         bool playing;

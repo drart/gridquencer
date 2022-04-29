@@ -3,13 +3,14 @@
 
 #include "Cell.h"
 #include "Region.h" 
-//#include "Sequence.h"
+#include "Sequence.h"
 #include <vector>
+#include <stddef.h>
 
 struct GridCell {
   Cell cell;
-  Region * _region = 0;
-  //Sequence * _sequence = 0;
+  Region * _region = NULL;
+  Sequence * _sequence = NULL;
 };
 
 
