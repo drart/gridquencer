@@ -13,6 +13,11 @@ Grid::Grid(){
     } 
   }
 }
+GridCell Grid::getCell(Cell cell){
+
+   return this->grid[(cell._y*8) + cell._x];
+  
+  }
 
 bool Grid::addRegion(Cell start, Cell end){
 
@@ -38,18 +43,28 @@ bool Grid::addRegion(Cell start, Cell end){
 
 bool Grid::requestMoveRegion(Region* _region, int dx, int dy){
 
+  
   std::vector<Region> overlappingRegions;
-
+  
   // check all cells in region for overlapping
   for ( int i = 0; i < _region->steps.size(); i++ ){
 
-    //Cell thecell = getCell( region.steps[i]);   
-    //thecell.x +=dx;
-    //thecell.y +=dy; 
-    //var regions = thecell.getRegions();   
-    //overlappingRegions = overlappingRegions.concat( regions );
+    GridCell thecell = getCell( _region->steps[i]);   
+    thecell.cell._x +=dx;
+    thecell.cell._y +=dy; 
+    std::vector<Region> linkedRegions;
+    for( auto _region:_regions ){
+      if(thecell._region != NULL){
+           linkedRegions.push_back(_region);
+      }
   }
-  //Serial.println(overlappingRegions.length);
+  
+   std::vector<Region> regions = linkedRegions;
+   overlappingRegions = linkedRegions;  
+   overlappingRegions.insert(overlappingRegions.end(), 
+   linkedRegions.begin(), linkedRegions.end());
+  }
+
 
   if ( overlappingRegions.size() <= 1 ){
 

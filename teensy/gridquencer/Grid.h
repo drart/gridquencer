@@ -11,6 +11,9 @@ struct GridCell {
   Cell cell;
   Region * _region = NULL;
   Sequence * _sequence = NULL;
+  std::vector<Region> getRegions(){
+      //todo
+    };
 };
 
 
@@ -19,6 +22,7 @@ class Grid {
     Grid();
     bool addRegion(Cell start, Cell end);
     bool requestMoveRegion(Region* region, int dx, int dy);
+    GridCell getCell(Cell cell);
     Cell * _selectedCell;
     Region * _selectedRegion;
   private: 
