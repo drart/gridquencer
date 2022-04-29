@@ -4,7 +4,7 @@
 #include "Region.h"
 
 
-class Sequencer {
+class Sequence {
     public: 
         Sequence();
         regionToSequence(Region r);
@@ -27,6 +27,6 @@ class Sequencer {
         float _length;
         std::vector<Note> _notes;
 
-}
+};
 
 #endif
