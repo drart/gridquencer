@@ -2,6 +2,9 @@
 #include <vector>
 
 Grid::Grid(){
+  _allowOverlap = false;
+  _columns = 8;
+  _rows = 8;
 
   // grid.reserve()? 
   for( char x = 0; x < _columns; x++){
@@ -36,7 +39,7 @@ bool Grid::addRegion(Cell start, Cell end){
   return true;
 }
 
-bool Grid::requestMoveRegion(Region* _region, int dx, int dy){
+bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
 
   std::vector<Region> overlappingRegions;
 
