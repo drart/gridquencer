@@ -12,14 +12,13 @@
 #include "Cell.h"
 #include "Region.h" 
 #include "Grid.h"
-#include "Sequencer.h"
 #include "Sequence.h"
-
+#include "Sequencer.h"
 
 IntervalTimer myTimer;
+
 USBHost myusb;
 MIDIDevice_BigBuffer midi1(myusb);
-Sequencer sequencer;
 //// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // used for hardware MIDI output
@@ -31,9 +30,11 @@ long microsPerSecond = 1000000;
 long period;
 long tickPeriod;
 
-//Cell test( 10, 2);
+Cell test( 10, 2);
 std::vector<Cell> padsDown;
-Grid grid = Grid();
+Grid grid;
+
+// Sequencer sequencer;
 
 void setup()
 {
@@ -41,7 +42,6 @@ void setup()
   Serial.begin(9600);
   Serial.println("USB Host Testing");
   myusb.begin();
-  
 
   MIDI.begin(MIDI_CHANNEL_OMNI);
 
@@ -54,31 +54,14 @@ void setup()
   //#define ABLETON_VENDOR_ID 0x2982
   //#define PUSH2_PRODUCT_ID  0x1967
   Serial.println( midi1.idVendor() );
-  Serial.println( String((char)midi1.product()).c_str() );
-
-  sequencer = Sequencer();
+  //Serial.println( String((char)midi1.product()).c_str() );
 
   period = (60 / bpm ) * microsPerSecond;  
   tickPeriod = period / 480;
 //  Serial.print("Default period: "); 
 //  Serial.println(period);
-//  myTimer.begin(sequencer, period);
+  // myTimer.begin(sequencer, period);
   
-}
-
-void moveRegion(byte channel, byte number, byte value){
-  if(number == 45) {
-    grid.requestMoveRegion(grid._selectedRegion,1,0);
-  }
-  else if(number == 46) {
-    grid.requestMoveRegion(grid._selectedRegion,-1,0);
-  }
-  else if(number == 47) {
-    grid.requestMoveRegion(grid._selectedRegion,0,1);
-  }
-  else if(number == 48) {
-    grid.requestMoveRegion(grid._selectedRegion,0,1);
-  }
 }
 
 
@@ -120,20 +103,19 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   
   padsDown.push_back( pushNoteToCell(note) );
   if(padsDown.size() == 2){
+    Region newRegion(padsDown[0], padsDown[1] );
+    // Serial.println( newRegion.numberOfSteps() );
     if (grid.addRegion( padsDown[0], padsDown[1] ) ){
-      /// TODO 
-      // std::vector<int> steps = newRegion.regionToVector();
-      /// Sequence newSequence( steps );
+      std::vector<int> steps = newRegion.regionToVector();
+      // for(int i = 0; i < (int)newRegion.cells.size(); i++){
+      //   Serial.print(newRegion.cells[i]._x);
+      //   Serial.print(",");
+      //   Serial.println(newRegion.cells[i]._y);
+      // }
+      // Serial.println((int)steps.size());
+      Sequence newSequence( steps );
       // create a sequence and add to sequencer
-      updateGridDisplay();
     }
-    
-//  if(padsDown.size() == 1){
-//    if(midimsg[0] == 176  && midimsg[2] == 127){
-//      moveRegion(midimsg);
-//      }
-//    
-//    }
   }
 }
 
@@ -168,6 +150,23 @@ Cell pushNoteToCell( byte note ){
   byte x = (note - 36 ) % 8;
   Cell newcell(x, y);
   return newcell;
+}
+
+
+
+void moveRegion(byte channel, byte number, byte value){
+  if(number == 45) {
+    grid.requestMoveRegion(grid._selectedRegion,1,0);
+  }
+  else if(number == 46) {
+    grid.requestMoveRegion(grid._selectedRegion,-1,0);
+  }
+  else if(number == 47) {
+    grid.requestMoveRegion(grid._selectedRegion,0,1);
+  }
+  else if(number == 48) {
+    grid.requestMoveRegion(grid._selectedRegion,0,1);
+  }
 }
 
 

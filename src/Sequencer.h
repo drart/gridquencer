@@ -1,9 +1,8 @@
 #ifndef G_SEQUENCER
 #define G_SEQUENCER
 
-#include <vector>
 #include "Sequence.h"
-// #include "IntervalTimer.h"
+#include "IntervalTimer.h"
 
 class Sequencer {
     public: 
@@ -14,14 +13,14 @@ class Sequencer {
         void stop();
         float bpm(float bpm);
         bool addSequence(Sequence * s); 
-        bool removeSequence(Sequence * s);
         bool queueSequence(Sequence * s);
+        bool removeSequence(Sequence * s);
         bool muteSequence(Sequence * s);
-        Sequence selectSequence(Sequence * s);
+        Sequence& selectSequence(Sequence * s);
 
 
     private: 
-        // IntervalTimer _seqTimer;
+        IntervalTimer _seqTimer;
         void tick();
 
         float _bpm;
