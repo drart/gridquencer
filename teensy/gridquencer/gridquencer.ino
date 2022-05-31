@@ -31,9 +31,9 @@ long microsPerSecond = 1000000;
 long period;
 long tickPeriod;
 
-Cell test( 10, 2);
+//Cell test( 10, 2);
 std::vector<Cell> padsDown;
-Grid grid;
+Grid grid = Grid();
 
 void setup()
 {
@@ -54,7 +54,7 @@ void setup()
   //#define ABLETON_VENDOR_ID 0x2982
   //#define PUSH2_PRODUCT_ID  0x1967
   Serial.println( midi1.idVendor() );
-  //Serial.println( String((char)midi1.product()).c_str() );
+  Serial.println( String((char)midi1.product()).c_str() );
 
   sequencer = Sequencer();
 
@@ -82,13 +82,6 @@ void moveRegion(byte channel, byte number, byte value){
 }
 
 
-void blankGridDisplay(){
-  for ( int x = 0; x < 8; x++){
-    for ( int y = 0; y < 8; y++ ){
-      //sendGrid( {x:x, y:y}, 0 );
-    }
-  }
-}
 
 /*
 void sequencer(){
@@ -128,9 +121,11 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   padsDown.push_back( pushNoteToCell(note) );
   if(padsDown.size() == 2){
     if (grid.addRegion( padsDown[0], padsDown[1] ) ){
+      /// TODO 
       // std::vector<int> steps = newRegion.regionToVector();
       /// Sequence newSequence( steps );
       // create a sequence and add to sequencer
+      updateGridDisplay();
     }
     
 //  if(padsDown.size() == 1){
@@ -173,4 +168,30 @@ Cell pushNoteToCell( byte note ){
   byte x = (note - 36 ) % 8;
   Cell newcell(x, y);
   return newcell;
+}
+
+
+void blankGridDisplay(){
+  for ( char x = 0; x < 8; x++){
+    for ( char y = 0; y < 8; y++ ){
+      sendGrid( x, y, 0 );
+    }
+  }
+}
+
+void sendGrid( char x, char y, char col){
+  char note = (y * 8) + x + 36;
+  midi1.sendNoteOn( note, col, 1); 
+}
+
+
+void updateGridDisplay(){
+  Serial.println(grid.grid.size() );
+  Serial.println(grid.grid[8].cell._x );
+//  for ( GridCell &cell : grid.grid ){
+//    Serial.println( cell.cell._x );
+//    if(cell._region != NULL){
+//      sendGrid( cell.cell._x, cell.cell._y, 15 ); //  TODO add colour defined by region
+//    }
+//  } 
 }
