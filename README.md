@@ -1,7 +1,19 @@
 Gridquencer
 ===========
 
-A sequencer for grid interfaces, starting with the Ableton Push. 
+A sequencer for grid interfaces, scattering my attention between javascript, ableton, nodejs, and teensy microcontrollers. 
+
+
+## TODO
+
+- Add JSON loading with ArduinoJSON library (should data be stored in objects as JSON too?)
+- Add hardware MIDI output and USB MIDI output
+
+## Pre-requisites: 
+
+- https://formulae.brew.sh/formula/teensy_loader_cli
+
+
 
 Installation
 ------------
