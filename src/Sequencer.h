@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "Sequence.h"
-#include "IntervalTimer.h"
+// #include "IntervalTimer.h"
 
 class Sequencer {
     public: 
@@ -21,7 +21,7 @@ class Sequencer {
 
 
     private: 
-        IntervalTimer _seqTimer;
+        // IntervalTimer _seqTimer;
         void tick();
 
         float _bpm;

@@ -6,7 +6,7 @@
 //-----------------------------------------*/
 #include "USBHost_t36.h"
 #include <MIDI.h>
-#include <TimerOne.h>
+#include <TimerThree.h>
 #include <vector>
 
 #include "Cell.h"
