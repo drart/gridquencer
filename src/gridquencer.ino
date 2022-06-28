@@ -26,15 +26,15 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // used for hardware MIDI o
 const int LEDPIN = LED_BUILTIN;
 int ledState = LOW;
 float bpm = 60.0f;
-long microsPerSecond = 1000000;
-long period;
-long tickPeriod;
+// long microsPerSecond = 1000000;
+// long period;
+// long tickPeriod;
 
 Cell test( 10, 2);
 std::vector<Cell> padsDown;
 Grid grid;
 
-// Sequencer sequencer;
+Sequencer sequencer; // todo new Sequencer(bpm,resolution);
 
 void setup()
 {
@@ -54,34 +54,17 @@ void setup()
   //#define ABLETON_VENDOR_ID 0x2982
   //#define PUSH2_PRODUCT_ID  0x1967
   Serial.println( midi1.idVendor() );
-  //Serial.println( String((char)midi1.product()).c_str() );
-
-  period = (60 / bpm ) * microsPerSecond;  
-  tickPeriod = period / 480;
-//  Serial.print("Default period: "); 
-//  Serial.println(period);
-  // myTimer.begin(sequencer, period);
+  Serial.println( String((char)midi1.product()).c_str() );
   
+  //sequencer.start();  // should this take a function as an argument? 
+  sequencer._bpm = 60;
+  sequencer._resolution = 480; // number of ticks per beat
+  myTimer.begin(seqfun, sequencer._period );
 }
 
-
-
-/*
-void sequencer(){
-
- if (ledState == LOW) {
-    ledState = HIGH;
-//    midi1.sendNoteOn( 60, 100, 1 );
-  } else {
-    ledState = LOW;
-//    midi1.sendNoteOff( 60, 100, 1 );
-  }
-  digitalWrite(LEDPIN, ledState);
-  
-  // sequencer.tick();
-  
+void seqfun(){
+  sequencer.tick();
 } 
-*/
 
 void loop()
 {
@@ -112,9 +95,11 @@ void OnNoteOn(byte channel, byte note, byte velocity)
       //   Serial.print(",");
       //   Serial.println(newRegion.cells[i]._y);
       // }
-      // Serial.println((int)steps.size());
+      Serial.println((int)steps.size());
       Sequence newSequence( steps );
-      // create a sequence and add to sequencer
+      // convert to JSON and print to console? 
+      sequencer.addSequence(newSequence);
+      // updateGridDisplay();
     }
   }
 }
@@ -144,7 +129,6 @@ void OnControlChange(byte channel, byte control, byte value)
   Serial.println();
 }
 
-
 Cell pushNoteToCell( byte note ){
   byte y = floor( (note - 36) / 8 );
   byte x = (note - 36 ) % 8;
@@ -152,8 +136,7 @@ Cell pushNoteToCell( byte note ){
   return newcell;
 }
 
-
-
+// TODO move to grid or region? 
 void moveRegion(byte channel, byte number, byte value){
   if(number == 45) {
     grid.requestMoveRegion(grid._selectedRegion,1,0);
@@ -169,7 +152,6 @@ void moveRegion(byte channel, byte number, byte value){
   }
 }
 
-
 void blankGridDisplay(){
   for ( char x = 0; x < 8; x++){
     for ( char y = 0; y < 8; y++ ){
@@ -183,14 +165,13 @@ void sendGrid( char x, char y, char col){
   midi1.sendNoteOn( note, col, 1); 
 }
 
-
 void updateGridDisplay(){
   Serial.println(grid.grid.size() );
   Serial.println(grid.grid[8].cell._x );
-//  for ( GridCell &cell : grid.grid ){
-//    Serial.println( cell.cell._x );
-//    if(cell._region != NULL){
-//      sendGrid( cell.cell._x, cell.cell._y, 15 ); //  TODO add colour defined by region
-//    }
-//  } 
+ for ( GridCell &cell : grid.grid ){
+   Serial.println( cell.cell._x );
+   if(cell._region != NULL){
+     sendGrid( cell.cell._x, cell.cell._y, 15 ); //  TODO add colour defined by region
+   }
+ } 
 }

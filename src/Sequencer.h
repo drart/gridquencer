@@ -2,28 +2,32 @@
 #define G_SEQUENCER
 
 #include "Sequence.h"
-#include "IntervalTimer.h"
 
 class Sequencer {
     public: 
         Sequencer();
         Sequencer(float bpm);
+        Sequencer(float bpm, int resolution);
         void start();
         void pause();
         void stop();
-        float bpm(float bpm);
-        bool addSequence(Sequence * s); 
-        bool queueSequence(Sequence * s);
+        void bpm(float bpm);
+        bool addSequence(Sequence s); 
+        bool queueSequence(Sequence s);
         bool removeSequence(Sequence * s);
         bool muteSequence(Sequence * s);
         Sequence& selectSequence(Sequence * s);
+        float getPeriod();
 
-
-    private: 
-        IntervalTimer _seqTimer;
+        long microsPerSecond = 1000000;
+//    private: 
         void tick();
 
         float _bpm;
+        float _period;
+        float _beatPeriod;
+        int _resolution;
+
         std::vector<Sequence> _sequences;
         std::vector<Sequence> _sequencesToStart;
         Sequence _selectedSequence;

@@ -44,6 +44,12 @@ bool Grid::addRegion(Cell start, Cell end){
   return true;
 }
 
+
+bool Grid::addRegion(Region newRegion){
+  // TODO check grid for overlap
+  _regions.push_back(newRegion);
+}
+
 bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
 
   

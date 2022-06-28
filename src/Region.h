@@ -14,12 +14,12 @@ class Region{
     std::vector<Cell> cells;
     // std::vector<std::vector<Cell>> rows;
     // std::vector<Cell> steps;
-  private:
-    int beats;
-    Cell bottomLeft;
-    Cell bottomRight;
-    Cell topLeft;
-    Cell topRight;
+  // private:
+    int _beats;
+    Cell _bottomLeft;
+    Cell _bottomRight;
+    Cell _topLeft;
+    Cell _topRight;
 };
 
 #endif
