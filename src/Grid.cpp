@@ -48,6 +48,7 @@ bool Grid::addRegion(Cell start, Cell end){
 bool Grid::addRegion(Region newRegion){
   // TODO check grid for overlap
   _regions.push_back(newRegion);
+  return true; // todo
 }
 
 bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
@@ -56,7 +57,7 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
   std::vector<Region> overlappingRegions;
   
   // check all cells in region for overlapping
-  for ( int i = 0; i < _region->cells.size(); i++ ){
+  for ( size_t i = 0; i < _region->cells.size(); i++ ){
 
     GridCell thecell = getCell( _region->cells[i]);   
     thecell.cell._x +=dx;
@@ -77,7 +78,7 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
 
   if ( overlappingRegions.size() <= 1 ){
 
-    for(int i=0; i < _region->cells.size(); i++){
+    for(size_t i=0; i < _region->cells.size(); i++){
         _region->cells[i]._x = _region->cells[i]._x + dx;
         _region->cells[i]._y = _region->cells[i]._y + dy;
     }

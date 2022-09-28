@@ -36,6 +36,7 @@ Grid grid;
 
 Sequencer sequencer; // todo new Sequencer(bpm,resolution);
 
+
 void setup()
 {
 //  while (!Serial) ; // wait for Arduino Serial Monitor
@@ -50,12 +51,6 @@ void setup()
   midi1.setHandleControlChange(OnControlChange);
   //midi.setHandleAfterTouch(); // to be added later
 
-  // push2midispec.md
-  //#define ABLETON_VENDOR_ID 0x2982
-  //#define PUSH2_PRODUCT_ID  0x1967
-  Serial.println( midi1.idVendor() );
-  Serial.println( String((char)midi1.product()).c_str() );
-  
   //sequencer.start();  // should this take a function as an argument? 
   sequencer._bpm = 60;
   sequencer._resolution = 480; // number of ticks per beat
@@ -127,6 +122,16 @@ void OnControlChange(byte channel, byte control, byte value)
   Serial.print(", value=");
   Serial.print(value);
   Serial.println();
+  
+  // push2midispec.md
+  //#define ABLETON_VENDOR_ID 0x2982
+  //#define PUSH2_PRODUCT_ID  0x1967
+  Serial.println( midi1.idVendor() );
+  const uint8_t * product = midi1.product();
+  uint8_t productid = *product;
+  Serial.println( String((const uint8_t)midi1.product()).c_str() );
+  Serial.println( int(product) );
+  
 }
 
 Cell pushNoteToCell( byte note ){
