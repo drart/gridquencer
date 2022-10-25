@@ -1,5 +1,6 @@
 #include "Grid.h"
 #include <vector>
+#include "Arduino.h"
 
 Grid::Grid(){
   _allowOverlap = false;
@@ -16,43 +17,40 @@ Grid::Grid(){
     } 
   }
 }
+
 GridCell Grid::getCell(Cell cell){
-
    return this->grid[(cell._y*8) + cell._x];
-  
+}
+
+bool Grid::checkOverlap(Region newRegion){
+  for ( auto & cell : newRegion.cells ){
+    if( !this->grid.at(cell._y*8 + cell._x).memberOf.empty() ){
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Grid::addRegion(Region newRegion){
+  if( !this->checkOverlap(newRegion) ){
+    return false;
   }
 
-bool Grid::addRegion(Cell start, Cell end){
+  for(auto &cell: newRegion.cells ){
+    Serial.println( (int)cell._x );
 
-/*
-  if ( start.x == end.x && start.y == end.y ){
-    // region with one cell
-    // if grid cell has no regions then add this to the regions and add reference to the gridCell
-    // _regions.push_back( Region(start) );
-    // grid[cell]->_region = &newRegion;
-    
+    GridCell newCell;
+    newCell.cell = cell;
+    newCell._region = &newRegion;
+    newCell.memberOf.push_back(newRegion);
+    this->grid.at(cell._y*8 + cell._x) = newCell;
   }
-  
-  // find bottom left and top right
-
-    for all cells in region
-     grid.getCell(x,y) == cell 
-     if not then return false 
-     if true then add region to grid and add region reference to each gridcell
-  */
+  _regions.push_back(newRegion);
 
   return true;
 }
 
-
-bool Grid::addRegion(Region newRegion){
-  // TODO check grid for overlap
-  _regions.push_back(newRegion);
-  return true; // todo
-}
-
 bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
-
   
   std::vector<Region> overlappingRegions;
   
@@ -75,19 +73,15 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
    linkedRegions.begin(), linkedRegions.end());
   }
 
-
   if ( overlappingRegions.size() <= 1 ){
-
     for(size_t i=0; i < _region->cells.size(); i++){
         _region->cells[i]._x = _region->cells[i]._x + dx;
         _region->cells[i]._y = _region->cells[i]._y + dy;
     }
-
-  }
-  else{
+  }else{
     //Serial.println("Region move request denied: Overlapping other region");
+    return false;
   }
-  
 
   return true;
 }

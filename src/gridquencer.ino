@@ -54,7 +54,9 @@ void setup()
   //sequencer.start();  // should this take a function as an argument? 
   sequencer._bpm = 60;
   sequencer._resolution = 480; // number of ticks per beat
-  myTimer.begin(seqfun, sequencer._period );
+    myTimer.begin(seqfun, sequencer._period );
+
+  // blankGridDisplay();  
 }
 
 void seqfun(){
@@ -82,19 +84,16 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   padsDown.push_back( pushNoteToCell(note) );
   if(padsDown.size() == 2){
     Region newRegion(padsDown[0], padsDown[1] );
-    // Serial.println( newRegion.numberOfSteps() );
-    if (grid.addRegion( padsDown[0], padsDown[1] ) ){
-      std::vector<int> steps = newRegion.regionToVector();
-      // for(int i = 0; i < (int)newRegion.cells.size(); i++){
-      //   Serial.print(newRegion.cells[i]._x);
-      //   Serial.print(",");
-      //   Serial.println(newRegion.cells[i]._y);
-      // }
-      Serial.println((int)steps.size());
-      Sequence newSequence( steps );
+
+    if ( grid.addRegion( newRegion ) ){
+      Serial.println("alkjfkljdaslkfjadlsj");
+      // grid.addRegion(newRegion);
+
+      // Sequence newSequence( newRegion.steps );
+      // sequencer.addSequence(newSequence);
+
       // convert to JSON and print to console? 
-      sequencer.addSequence(newSequence);
-      // updateGridDisplay();
+      updateGridDisplay();
     }
   }
 }
@@ -108,9 +107,14 @@ void OnNoteOff(byte channel, byte note, byte velocity)
   //Serial.print(", velocity=");
   //Serial.print(velocity);
   Serial.println();
-  midi1.sendNoteOff(note,10,channel);
-  usbMIDI.sendNoteOff(note,10,channel);
-  padsDown.clear();
+
+  // midi1.sendNoteOff(note,10,channel);
+  // usbMIDI.sendNoteOff(note,10,channel);
+
+  if(!padsDown.empty()){
+    padsDown.clear();
+  }
+  // updateGridDisplay();
 }
 
 void OnControlChange(byte channel, byte control, byte value)
@@ -129,9 +133,8 @@ void OnControlChange(byte channel, byte control, byte value)
   Serial.println( midi1.idVendor() );
   const uint8_t * product = midi1.product();
   uint8_t productid = *product;
-  Serial.println( String((const uint8_t)midi1.product()).c_str() );
-  Serial.println( int(product) );
-  
+  // Serial.println( String((const uint8_t)midi1.product()).c_str() );
+  Serial.println( int(productid) );
 }
 
 Cell pushNoteToCell( byte note ){
@@ -171,12 +174,14 @@ void sendGrid( char x, char y, char col){
 }
 
 void updateGridDisplay(){
-  Serial.println(grid.grid.size() );
-  Serial.println(grid.grid[8].cell._x );
+ int tester = 0;
  for ( GridCell &cell : grid.grid ){
-   Serial.println( cell.cell._x );
-   if(cell._region != NULL){
+   tester++; 
+   if( !cell.memberOf.empty() ){
      sendGrid( cell.cell._x, cell.cell._y, 15 ); //  TODO add colour defined by region
+   }else{
+     sendGrid( cell.cell._x, cell.cell._y, 0 ); 
    }
  } 
+ Serial.println(tester);
 }
