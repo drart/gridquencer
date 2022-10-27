@@ -57,7 +57,7 @@ void setup()
   sequencer.bpm(60.0f);
 
   //sequencer.start();  // todo should this take a function as an argument? 
-  myTimer.begin(seqfun, sequencer._period );
+  myTimer.begin(seqfun, sequencer._microsPerSecond );
 
   Serial.println(sequencer._beatPeriod);
   Serial.println(sequencer._bpm);
@@ -78,12 +78,20 @@ void setup()
 
 void seqfun(){
   sequencer.tick();
+  if(sequencer._tickTime % 480 == 0){
+    Serial.println("beat");
+  }
+  if(!sequencer._sequences.empty()){
+    Serial.println(sequencer._sequences[0]._notes[0].pitch);
+    usbMIDI.sendNoteOn(60, 127, 1);
+  }
 } 
 
 void loop()
 {
   myusb.Task();
-  while( midi1.read() ){} // drops messages in a flood
+  midi1.read();
+  // while( midi1.read() ){} // drops messages in a flood
 }
 
 void OnNoteOn(byte channel, byte note, byte velocity)
@@ -107,8 +115,13 @@ void OnNoteOn(byte channel, byte note, byte velocity)
     if ( grid.addRegion( newRegion ) ){
       Serial.println("Region added to grid");
 
-      // Sequence newSequence( newRegion.steps );
-      // sequencer.addSequence(newSequence);
+      std::vector<int> regionvec = newRegion.regionToVector(); 
+      for(int val : regionvec ){
+        Serial.println(val);
+      }
+      Sequence newSequence( regionvec );
+      Serial.println( newSequence._notes.size() );
+      sequencer.addSequence(newSequence);
 
       // convert to JSON and print to console? 
       updateGridDisplay();

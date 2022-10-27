@@ -20,18 +20,20 @@ Region::Region(Cell firstPoint, Cell secondPoint){
 
 }
 
-// TODO improve vector representation of regions
 std::vector<int> Region::regionToVector(){
   std::vector<int> thearray;
   int s = 1;
-  thearray.push_back(s);
   if (cells.size() != 1) {
     for (int i = 1; i < (int)cells.size(); i++) {
       if((int)cells.at(i-1)._y != (int)cells.at(i)._y){
-        thearray.push_back(s++);
+        thearray.push_back(s);
+        s = 1;
+      }else{
+        s++;
       }
     }
   }
+  thearray.push_back(s);
   return thearray;
 }
 
