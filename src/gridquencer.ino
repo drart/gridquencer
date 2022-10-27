@@ -8,6 +8,7 @@
 #include <MIDI.h>
 #include <TimerThree.h>
 #include <vector>
+// todo #include "ArduinoJSON.h"
 
 #include "Cell.h"
 #include "Region.h" 
@@ -30,43 +31,60 @@ float bpm = 60.0f;
 // long period;
 // long tickPeriod;
 
-Cell test( 10, 2);
 std::vector<Cell> padsDown;
 Grid grid;
 
 Sequencer sequencer; // todo new Sequencer(bpm,resolution);
 
-
 void setup()
 {
 //  while (!Serial) ; // wait for Arduino Serial Monitor
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("USB Host Testing");
-  myusb.begin();
 
+  myusb.begin();
+  // midi1.begin();
   MIDI.begin(MIDI_CHANNEL_OMNI);
+
+
 
   midi1.setHandleNoteOff(OnNoteOff);
   midi1.setHandleNoteOn(OnNoteOn);
   midi1.setHandleControlChange(OnControlChange);
   //midi.setHandleAfterTouch(); // to be added later
 
-  //sequencer.start();  // should this take a function as an argument? 
-  sequencer._bpm = 60;
   sequencer._resolution = 480; // number of ticks per beat
-    myTimer.begin(seqfun, sequencer._period );
+  sequencer.bpm(60.0f);
 
-  // blankGridDisplay();  
+  //sequencer.start();  // should this take a function as an argument? 
+  // myTimer.begin(seqfun, sequencer._period );
+
+  Serial.println(sequencer._beatPeriod);
+  Serial.println(sequencer._bpm);
+  Serial.println(sequencer._resolution);
+
+  delay(400);
+  blankGridDisplay();  
+  // push2midispec.md
+  //#define ABLETON_VENDOR_ID 0x2982
+  //#define PUSH2_PRODUCT_ID  0x1967
+  if(midi1.idVendor() == 0x2982){
+    Serial.println("USB device made by Ableton");
+  }
+  if(midi1.idProduct() == 0x1967){
+    Serial.println("USB Device is Push 2");
+  }
 }
 
 void seqfun(){
   sequencer.tick();
+  Serial.println("tick");
 } 
 
 void loop()
 {
   myusb.Task();
-  midi1.read();
+  while( midi1.read() ){} // drops messages in a flood
 }
 
 void OnNoteOn(byte channel, byte note, byte velocity)
@@ -80,20 +98,23 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   Serial.println();
   midi1.sendNoteOn(note, 10, channel);
   usbMIDI.sendNoteOn(note, velocity, channel);
+
+  if(note < 30){return;} // don't listen to knob touches on push
   
   padsDown.push_back( pushNoteToCell(note) );
-  if(padsDown.size() == 2){
+  if(padsDown.size() == 2){ // TODO handle region of size 1
     Region newRegion(padsDown[0], padsDown[1] );
 
     if ( grid.addRegion( newRegion ) ){
-      Serial.println("alkjfkljdaslkfjadlsj");
-      // grid.addRegion(newRegion);
+      Serial.println("Region added to grid");
 
       // Sequence newSequence( newRegion.steps );
       // sequencer.addSequence(newSequence);
 
       // convert to JSON and print to console? 
       updateGridDisplay();
+    }else{
+      Serial.println("Region not added to grid");
     }
   }
 }
@@ -104,17 +125,14 @@ void OnNoteOff(byte channel, byte note, byte velocity)
   Serial.print(channel);
   Serial.print(", note=");
   Serial.print(note);
-  //Serial.print(", velocity=");
-  //Serial.print(velocity);
   Serial.println();
 
-  // midi1.sendNoteOff(note,10,channel);
-  // usbMIDI.sendNoteOff(note,10,channel);
+  midi1.sendNoteOff(note,10,channel);
 
   if(!padsDown.empty()){
     padsDown.clear();
   }
-  // updateGridDisplay();
+  updateGridDisplay();
 }
 
 void OnControlChange(byte channel, byte control, byte value)
@@ -126,15 +144,19 @@ void OnControlChange(byte channel, byte control, byte value)
   Serial.print(", value=");
   Serial.print(value);
   Serial.println();
-  
-  // push2midispec.md
-  //#define ABLETON_VENDOR_ID 0x2982
-  //#define PUSH2_PRODUCT_ID  0x1967
-  Serial.println( midi1.idVendor() );
-  const uint8_t * product = midi1.product();
-  uint8_t productid = *product;
-  // Serial.println( String((const uint8_t)midi1.product()).c_str() );
-  Serial.println( int(productid) );
+  if(control == 30 ){ // setup button
+    if(value == 127){
+      blankGridDisplay();
+    }else{
+      updateGridDisplay();
+    }
+  }
+  /// todo causes crash
+  /*
+  if(control == 45 && value == 127){
+    bool ttt = grid.requestMoveRegion(grid._selectedRegion, 1,0);
+  }
+  */
 }
 
 Cell pushNoteToCell( byte note ){
@@ -174,14 +196,11 @@ void sendGrid( char x, char y, char col){
 }
 
 void updateGridDisplay(){
- int tester = 0;
  for ( GridCell &cell : grid.grid ){
-   tester++; 
    if( !cell.memberOf.empty() ){
      sendGrid( cell.cell._x, cell.cell._y, 15 ); //  TODO add colour defined by region
    }else{
      sendGrid( cell.cell._x, cell.cell._y, 0 ); 
    }
  } 
- Serial.println(tester);
 }

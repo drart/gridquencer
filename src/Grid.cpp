@@ -1,6 +1,5 @@
 #include "Grid.h"
 #include <vector>
-#include "Arduino.h"
 
 Grid::Grid(){
   _allowOverlap = false;
@@ -8,8 +7,8 @@ Grid::Grid(){
   _rows = 8;
 
   // grid.reserve()? 
-  for( char x = 0; x < _columns; x++){
-    for( char y = 0; y < _rows; y++){
+  for( char y = 0; y < _rows; y++){
+    for( char x = 0; x < _columns; x++){
       GridCell gridcell;
       gridcell.cell._x = x;
       gridcell.cell._y = y;
@@ -37,8 +36,6 @@ bool Grid::addRegion(Region newRegion){
   }
 
   for(auto &cell: newRegion.cells ){
-    Serial.println( (int)cell._x );
-
     GridCell newCell;
     newCell.cell = cell;
     newCell._region = &newRegion;
@@ -46,7 +43,7 @@ bool Grid::addRegion(Region newRegion){
     this->grid.at(cell._y*8 + cell._x) = newCell;
   }
   _regions.push_back(newRegion);
-
+  _selectedRegion = &newRegion;
   return true;
 }
 
