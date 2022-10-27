@@ -6,7 +6,7 @@ Grid::Grid(){
   _columns = 8;
   _rows = 8;
 
-  // grid.reserve()? 
+  // todo grid.reserve()? 
   for( char y = 0; y < _rows; y++){
     for( char x = 0; x < _columns; x++){
       GridCell gridcell;
@@ -69,7 +69,7 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
    overlappingRegions.insert(overlappingRegions.end(), 
    linkedRegions.begin(), linkedRegions.end());
   }
-
+  // todo check that new places are within grid size
   if ( overlappingRegions.size() <= 1 ){
     for(size_t i=0; i < _region->cells.size(); i++){
         _region->cells[i]._x = _region->cells[i]._x + dx;

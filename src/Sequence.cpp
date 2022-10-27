@@ -20,3 +20,8 @@ Sequence::Sequence(std::vector<int> inputvec){
     }
 
 }
+
+
+void Sequence::tick(){
+    _tickTime++;
+}

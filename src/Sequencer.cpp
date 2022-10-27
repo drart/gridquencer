@@ -5,17 +5,19 @@ Sequencer::Sequencer(){
 
 void Sequencer::bpm(float bpm){
     _bpm = bpm;
-    _beatPeriod = (60 / _bpm ) * microsPerSecond;  
-    _period = _beatPeriod / _resolution;
+    _beatPeriod = (60.0f / _bpm );  
+    _period = _beatPeriod * _microsPerSecond /  _resolution;
 }
-
 
 void Sequencer::tick(){
     // if ticktime/tickinterval == 0
-    // if(_sequencesToStart.size() != 0 ){
-    //     // 
-    // }
+    if( !_sequencesToStart.empty() ){
+        // add queued sequences 
+    }
 
+    for( auto &seq : _sequences ){
+        seq.tick();
+    }
 }
 
 bool Sequencer::addSequence(Sequence s){
@@ -29,5 +31,5 @@ bool Sequencer::queueSequence(Sequence s){
 }
 
 float Sequencer::getPeriod(){
-    return _beatPeriod;
+    return _period;
 }

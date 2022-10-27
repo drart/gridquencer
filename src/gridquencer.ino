@@ -56,12 +56,12 @@ void setup()
   sequencer._resolution = 480; // number of ticks per beat
   sequencer.bpm(60.0f);
 
-  //sequencer.start();  // should this take a function as an argument? 
-  // myTimer.begin(seqfun, sequencer._period );
+  //sequencer.start();  // todo should this take a function as an argument? 
+  myTimer.begin(seqfun, sequencer._period );
 
   Serial.println(sequencer._beatPeriod);
   Serial.println(sequencer._bpm);
-  Serial.println(sequencer._resolution);
+  Serial.println(sequencer._period);
 
   delay(400);
   blankGridDisplay();  
@@ -78,7 +78,6 @@ void setup()
 
 void seqfun(){
   sequencer.tick();
-  Serial.println("tick");
 } 
 
 void loop()

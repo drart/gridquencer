@@ -7,7 +7,7 @@ class Sequencer {
     public: 
         Sequencer();
         Sequencer(float bpm);
-        Sequencer(float bpm, int resolution);
+        Sequencer(float bpm, float resolution);
         void start();
         void pause();
         void stop();
@@ -19,7 +19,7 @@ class Sequencer {
         Sequence& selectSequence(Sequence * s);
         float getPeriod();
 
-        long microsPerSecond = 1000000;
+        float _microsPerSecond = 1000000.0f;
 //    private: 
         void tick();
 
