@@ -1,8 +1,6 @@
 /*-----------------------------------------
-// griquencer teensy 
-// Set Serial Mode to MIDI
-//
-//
+// griquencer teensy 3.5,3.6,4.0,4.1
+// In Arduino IDE Set Serial Mode to MIDI
 //-----------------------------------------*/
 #include "USBHost_t36.h"
 #include <MIDI.h>
@@ -19,22 +17,18 @@
 IntervalTimer myTimer;
 
 USBHost myusb;
-MIDIDevice_BigBuffer midi1(myusb);
-//// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
+MIDIDevice_BigBuffer midi1(myusb); //// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // used for hardware MIDI output
 
 const int LEDPIN = LED_BUILTIN;
 int ledState = LOW;
 float bpm = 60.0f;
-// long microsPerSecond = 1000000;
-// long period;
-// long tickPeriod;
 
 std::vector<Cell> padsDown;
 Grid grid;
 
-Sequencer sequencer; // todo new Sequencer(bpm,resolution);
+Sequencer sequencer(60.0f, 480); // todo new Sequencer(bpm,resolution);
 
 void setup()
 {
@@ -43,21 +37,14 @@ void setup()
   Serial.println("USB Host Testing");
 
   myusb.begin();
-  // midi1.begin();
   MIDI.begin(MIDI_CHANNEL_OMNI);
-
-
-
   midi1.setHandleNoteOff(OnNoteOff);
   midi1.setHandleNoteOn(OnNoteOn);
   midi1.setHandleControlChange(OnControlChange);
   //midi.setHandleAfterTouch(); // to be added later
 
-  sequencer._resolution = 480; // number of ticks per beat
-  sequencer.bpm(60.0f);
-
   //sequencer.start();  // todo should this take a function as an argument? 
-  myTimer.begin(seqfun, sequencer._microsPerSecond );
+  myTimer.begin(seqfun, sequencer._microsPerSecond / 100);
 
   Serial.println(sequencer._beatPeriod);
   Serial.println(sequencer._bpm);
@@ -77,13 +64,15 @@ void setup()
 }
 
 void seqfun(){
+    // service notes for tick index
+    // update visual feedback on grid 
   sequencer.tick();
   if(sequencer._tickTime % 480 == 0){
     Serial.println("beat");
   }
-  if(!sequencer._sequences.empty()){
-    Serial.println(sequencer._sequences[0]._notes[0].pitch);
-    usbMIDI.sendNoteOn(60, 127, 1);
+  // BUG never has anything
+  // for each sequence look for a note to be serviced
+  for(Sequence &seq : sequencer._sequences ){
   }
 } 
 
@@ -91,7 +80,6 @@ void loop()
 {
   myusb.Task();
   midi1.read();
-  // while( midi1.read() ){} // drops messages in a flood
 }
 
 void OnNoteOn(byte channel, byte note, byte velocity)
@@ -116,12 +104,13 @@ void OnNoteOn(byte channel, byte note, byte velocity)
       Serial.println("Region added to grid");
 
       std::vector<int> regionvec = newRegion.regionToVector(); 
-      for(int val : regionvec ){
-        Serial.println(val);
+      // BUG new sequence does not get added to the list of seqwuences
+      // Sequence newSequence( regionvec );
+      Sequence * newSequence = new Sequence(regionvec);
+      sequencer.queueSequence(*newSequence); 
+      for(Note &n : newSequence->_notes){
+        Serial.println(n.index);
       }
-      Sequence newSequence( regionvec );
-      Serial.println( newSequence._notes.size() );
-      sequencer.addSequence(newSequence);
 
       // convert to JSON and print to console? 
       updateGridDisplay();
