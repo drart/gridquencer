@@ -21,28 +21,32 @@ void Sequencer::bpm(float bpm){
 }
 
 void Sequencer::tick(){
-    for( Sequence &seq : this->_sequences ){
-        seq.tick();
+    for( Sequence *seq : this->_sequences ){
+        seq->tick();
     }
     this->_tickTime++;
-    if(this->_tickTime / this->_resolution == 0){
-        for( Sequence &seq : this->_sequencesToStart ){
-            this->addSequence(seq);
+    if(this->_tickTime % this->_resolution == 0){
+        for( Sequence *seq : this->_sequencesToStart ){
+            this->_sequences.push_back(seq);
         }
         this->_sequencesToStart.clear();
     }
 }
 
-bool Sequencer::addSequence(Sequence s){
+bool Sequencer::addSequence(Sequence * s){
     this->_sequences.push_back(s);
     return true;
 }
 
-bool Sequencer::queueSequence(Sequence s){
+bool Sequencer::queueSequence(Sequence * s){
     this->_sequencesToStart.push_back(s);
     return true;
 }
 
 float Sequencer::getPeriod(){
     return this->_period;
+}
+
+Sequencer::~Sequencer(){
+    // TODO delete _sequences and queued sequences
 }

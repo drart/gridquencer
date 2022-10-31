@@ -64,15 +64,19 @@ void setup()
 }
 
 void seqfun(){
+  sequencer.tick();
     // service notes for tick index
     // update visual feedback on grid 
-  sequencer.tick();
   if(sequencer._tickTime % 480 == 0){
     Serial.println("beat");
   }
-  // BUG never has anything
+  for(Sequence * seq : sequencer._sequences ){
   // for each sequence look for a note to be serviced
-  for(Sequence &seq : sequencer._sequences ){
+    for(Note n : seq->_notes){
+      if(seq->_tickTime == n.index){
+        Serial.println(n.pitch);
+      }
+    }
   }
 } 
 
@@ -104,10 +108,9 @@ void OnNoteOn(byte channel, byte note, byte velocity)
       Serial.println("Region added to grid");
 
       std::vector<int> regionvec = newRegion.regionToVector(); 
-      // BUG new sequence does not get added to the list of seqwuences
-      // Sequence newSequence( regionvec );
+      // TODO deallocate memory at appropriate time
       Sequence * newSequence = new Sequence(regionvec);
-      sequencer.queueSequence(*newSequence); 
+      sequencer.queueSequence(newSequence); 
       for(Note &n : newSequence->_notes){
         Serial.println(n.index);
       }
