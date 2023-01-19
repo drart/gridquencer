@@ -23,12 +23,14 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // used for hardware MIDI o
 
 const int LEDPIN = LED_BUILTIN;
 int ledState = LOW;
+const int LEDPIN1 = 2;
+const int LEDPIN2 = 3;
 float bpm = 60.0f;
 
 std::vector<Cell> padsDown;
 Grid grid;
 
-Sequencer sequencer(60.0f, 480); // todo new Sequencer(bpm,resolution);
+Sequencer sequencer(60.0f, 480); 
 
 void setup()
 {
@@ -37,7 +39,7 @@ void setup()
   Serial.println("USB Host Testing");
 
   myusb.begin();
-  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.begin();
   midi1.setHandleNoteOff(OnNoteOff);
   midi1.setHandleNoteOn(OnNoteOn);
   midi1.setHandleControlChange(OnControlChange);
@@ -50,6 +52,10 @@ void setup()
   Serial.println(sequencer._bpm);
   Serial.println(sequencer._period);
 
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  
+
   delay(400);
   blankGridDisplay();  
   // push2midispec.md
@@ -57,9 +63,11 @@ void setup()
   //#define PUSH2_PRODUCT_ID  0x1967
   if(midi1.idVendor() == 0x2982){
     Serial.println("USB device made by Ableton");
+    digitalWrite(2, HIGH);
   }
   if(midi1.idProduct() == 0x1967){
     Serial.println("USB Device is Push 2");
+    digitalWrite(3, HIGH);
   }
 }
 
@@ -69,11 +77,19 @@ void seqfun(){
     // update visual feedback on grid 
   if(sequencer._tickTime % 480 == 0){
     Serial.println("beat");
+    MIDI.sendClock();
+    //MIDI.sendNoteOn(74,126,10);
+    //midi1.sendControlChange(120,120,1);
   }
   for(Sequence * seq : sequencer._sequences ){
-  // for each sequence look for a note to be serviced
+    // check each note in each sequence to see if now is its time to shine
     for(Note n : seq->_notes){
       if(seq->_tickTime == n.index){
+        Serial.println("Sending note out" );
+        // todo put the channels into the sequences
+        // todo 
+        MIDI.sendNoteOn(100,100,10);
+        // MIDI.sendNoteOn(n.pitch, n.velocity, 10);
         Serial.println(n.pitch);
       }
     }
