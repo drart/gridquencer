@@ -17,6 +17,7 @@
 IntervalTimer myTimer;
 
 USBHost myusb;
+USBHub hub1(myusb);
 MIDIDevice_BigBuffer midi1(myusb); //// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // used for hardware MIDI output
@@ -46,7 +47,7 @@ void setup()
   //midi.setHandleAfterTouch(); // to be added later
 
   //sequencer.start();  // todo should this take a function as an argument? 
-  myTimer.begin(seqfun, sequencer._microsPerSecond / 100);
+  myTimer.begin(seqfun, sequencer._microsPerSecond / sequencer._period);
 
   Serial.println(sequencer._beatPeriod);
   Serial.println(sequencer._bpm);
@@ -65,10 +66,15 @@ void setup()
     Serial.println("USB device made by Ableton");
     digitalWrite(2, HIGH);
   }
+
+  if(midi1.idProduct() == 0x113){
+    Serial.println("USB Device is LaunchPad");
+  }
   if(midi1.idProduct() == 0x1967){
     Serial.println("USB Device is Push 2");
     digitalWrite(3, HIGH);
   }
+
 }
 
 void seqfun(){
@@ -76,7 +82,7 @@ void seqfun(){
     // service notes for tick index
     // update visual feedback on grid 
   if(sequencer._tickTime % 480 == 0){
-    Serial.println("beat");
+    // Serial.println("beat");
     MIDI.sendClock();
     //MIDI.sendNoteOn(74,126,10);
     //midi1.sendControlChange(120,120,1);
@@ -85,25 +91,23 @@ void seqfun(){
     // check each note in each sequence to see if now is its time to shine
     for(Note n : seq->_notes){
       if(seq->_tickTime == n.index){
-        Serial.println("Sending note out" );
+        //Serial.println("Sending note out" );
         // todo put the channels into the sequences
         // todo 
         MIDI.sendNoteOn(100,100,10);
         // MIDI.sendNoteOn(n.pitch, n.velocity, 10);
-        Serial.println(n.pitch);
+        // Serial.println(n.pitch);
       }
     }
   }
 } 
 
-void loop()
-{
+void loop() {
   myusb.Task();
   midi1.read();
 }
 
-void OnNoteOn(byte channel, byte note, byte velocity)
-{
+void OnNoteOn(byte channel, byte note, byte velocity) {
   Serial.print("Note On, ch=");
   Serial.print(channel);
   Serial.print(", note=");
@@ -114,9 +118,13 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   midi1.sendNoteOn(note, 10, channel);
   usbMIDI.sendNoteOn(note, velocity, channel);
 
-  if(note < 30){return;} // don't listen to knob touches on push
-  
-  padsDown.push_back( pushNoteToCell(note) );
+
+  // Convert Notes to Cell notation zero indexed from bottom left of grid 
+
+  // if(note < 30){return;} // don't listen to knob touches on push
+  // padsDown.push_back( pushNoteToCell(note) );
+  padsDown.push_back( LPPNoteToCell(note) );
+
   if(padsDown.size() == 2){ // TODO handle region of size 1
     Region newRegion(padsDown[0], padsDown[1] );
 
@@ -131,7 +139,7 @@ void OnNoteOn(byte channel, byte note, byte velocity)
         Serial.println(n.index);
       }
 
-      // convert to JSON and print to console? 
+      // todo convert to JSON and print to console? 
       updateGridDisplay();
     }else{
       Serial.println("Region not added to grid");
@@ -139,8 +147,7 @@ void OnNoteOn(byte channel, byte note, byte velocity)
   }
 }
 
-void OnNoteOff(byte channel, byte note, byte velocity)
-{
+void OnNoteOff(byte channel, byte note, byte velocity) {
   Serial.print("Note Off, ch=");
   Serial.print(channel);
   Serial.print(", note=");
@@ -155,8 +162,7 @@ void OnNoteOff(byte channel, byte note, byte velocity)
   updateGridDisplay();
 }
 
-void OnControlChange(byte channel, byte control, byte value)
-{
+void OnControlChange(byte channel, byte control, byte value) {
   Serial.print("Control Change, ch=");
   Serial.print(channel);
   Serial.print(", control=");
@@ -179,12 +185,26 @@ void OnControlChange(byte channel, byte control, byte value)
   */
 }
 
+Cell LPPNoteToCell( byte note ){
+  byte y = (note / 10) - 1;
+  byte x = (note % 10) - 1;
+  Serial.println( y);
+  Serial.println( x);
+  Cell newcell(x, y);
+  return newcell;
+}
+
 Cell pushNoteToCell( byte note ){
   byte y = floor( (note - 36) / 8 );
   byte x = (note - 36 ) % 8;
   Cell newcell(x, y);
   return newcell;
 }
+
+void LPPM3NoteOn(byte channel, byte note, byte velocity){
+  Serial.println(note);
+}
+
 
 // TODO move to grid or region? 
 void moveRegion(byte channel, byte number, byte value){
@@ -205,9 +225,14 @@ void moveRegion(byte channel, byte number, byte value){
 void blankGridDisplay(){
   for ( char x = 0; x < 8; x++){
     for ( char y = 0; y < 8; y++ ){
-      sendGrid( x, y, 0 );
+      sendGridLPP( x, y, 0 );
     }
   }
+}
+
+void sendGridLPP( char x, char y, char col){
+  char note = ( y * 10) + 11 + x;
+  midi1.sendNoteOn( note, col, 1); 
 }
 
 void sendGrid( char x, char y, char col){
@@ -218,9 +243,9 @@ void sendGrid( char x, char y, char col){
 void updateGridDisplay(){
  for ( GridCell &cell : grid.grid ){
    if( !cell.memberOf.empty() ){
-     sendGrid( cell.cell._x, cell.cell._y, 15 ); //  TODO add colour defined by region
+     sendGridLPP( cell.cell._x, cell.cell._y, 15 ); //  TODO add colour defined by region
    }else{
-     sendGrid( cell.cell._x, cell.cell._y, 0 ); 
+     sendGridLPP( cell.cell._x, cell.cell._y, 0 ); 
    }
  } 
 }
