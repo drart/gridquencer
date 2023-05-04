@@ -17,7 +17,7 @@ Sequencer::Sequencer(float bpm, float resolution){
 void Sequencer::bpm(float bpm){
     this->_bpm = bpm;
     this->_beatPeriod = (60.0f / _bpm );  
-    this->_period = _beatPeriod * _microsPerSecond /  _resolution;
+    this->_period = _beatPeriod / _resolution * _microsPerSecond;
 }
 
 void Sequencer::tick(){

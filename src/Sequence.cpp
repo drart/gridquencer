@@ -15,7 +15,7 @@ Sequence::Sequence(std::vector<int> inputvec){
 
     for(int value : inputvec){
         this->_beats++;
-        int beatchop = 480 / value;
+        int beatchop = 480 / value; // TODO clean up
         for(int i = 0; i < value; i++){
             Note n;
             n.pitch = 60;
