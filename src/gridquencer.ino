@@ -8,17 +8,15 @@
 #include <vector>
 // todo #include "ArduinoJSON.h"
 
-#include "Cell.h"
-#include "Region.h" 
 #include "Grid.h"
-#include "Sequence.h"
 #include "Sequencer.h"
 
 IntervalTimer myTimer;
 
 USBHost myusb;
 USBHub hub1(myusb);
-MIDIDevice_BigBuffer midicontroller(myusb); //// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
+//MIDIDevice_BigBuffer midicontroller(myusb); //// https://forum.pjrc.com/threads/66148-Teensy-3-6-USBHost-interfacing-Ableton-Push2
+MIDIDevice midicontroller(myusb); // Push 1 is not a USB2.0 full speed device
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, midi_module_output); // used for hardware MIDI output
 
@@ -28,9 +26,6 @@ const int LEDPIN1 = 2;
 const int LEDPIN2 = 3;
 
 Sequencer sequencer(60.0f, 480);  // bpm, ticks per beat. 480 allows for good resolution of subdivisions up to 20
-
-uint16_t vendorid = 0;
-uint16_t deviceid = 0;
 
 std::vector<Cell> padsDown;
 Grid grid;
@@ -44,18 +39,20 @@ void setup()
 
   myusb.begin();
   midi_module_output.begin();
-  //midicontroller.begin();
   midicontroller.setHandleNoteOff(OnNoteOff);
   midicontroller.setHandleNoteOn(OnNoteOn);
-  midicontroller.setHandleControlChange(OnControlChange);
+  midicontroller.setHandleControlChange(OnControlChange); 
   //midi.setHandleAfterTouch(); // to be added later
 
   //sequencer.start();  // todo should this take a function as an argument? 
   sequencer.bpm(120.0); // for now this just sets a value and does not update the intervaltimer
   myTimer.begin(seqfun, (double) sequencer._period);
 
+  Serial.print("Sequencer BPM: ");
   Serial.println(sequencer._bpm);
+  Serial.print("Sequencer beat period: ");
   Serial.println(sequencer._beatPeriod);
+  Serial.print("Sequencer period: ");
   Serial.println(sequencer._period);
 
   pinMode(2, OUTPUT);
@@ -63,7 +60,13 @@ void setup()
 
   digitalWrite(2, HIGH);
   delay(400);
-  //blankGridDisplay();  
+
+  String productname = (char*)midicontroller.product();
+  Serial.print("Reported name of connected USB device: ");
+  Serial.println(productname);
+  // todo check for null? 
+
+  blankGridDisplay();  
   // push2midispec.md
   //#define ABLETON_VENDOR_ID 0x2982
   //#define PUSH2_PRODUCT_ID  0x1967
@@ -73,6 +76,28 @@ void setup()
   }
   if(midicontroller.idProduct() == 0x15){
     Serial.println("USB Device is Push 1");
+    // https://github.com/Carlborg/hardpush/blob/master/hardpush.ino#L436
+    byte sysexUserModeMessage[] = {240, 71, 127, 21, 98, 0, 1, 0, 247};
+    midicontroller.sendSysEx(9, sysexUserModeMessage, true, 1);
+
+    uint8_t line1[] = {240,71,127,21,28,0,0,247};
+    uint8_t line2[] = {240,71,127,21,29,0,0,247};
+    uint8_t line3[] = {240,71,127,21,30,0,0,247};
+    uint8_t line4[] = {240,71,127,21,31,0,0,247};
+    midicontroller.sendSysEx(sizeof(line1)/sizeof(uint8_t), line1, true);
+    midicontroller.sendSysEx(sizeof(line2)/sizeof(uint8_t), line2, true);
+    midicontroller.sendSysEx(sizeof(line3)/sizeof(uint8_t), line3, true);
+    midicontroller.sendSysEx(sizeof(line4)/sizeof(uint8_t), line4, true);
+
+
+    // PUSH SYSEX Spec
+    // 240,71,127,21,<24+line(0-3)>,0,<Nchars+1>,<Offset>,<Chars>,247
+    // 240,71,127,21,25,0,14,4,"Hello World",247 /// string is length 13
+    uint8_t helloworldlcd[] = {240,71,127,21,25,0,14,0,34,104,101,108,108,111,32,119,111,114,108,100,34,247};
+    midicontroller.sendSysEx(sizeof(helloworldlcd)/sizeof(uint8_t), helloworldlcd, true);
+
+
+
     digitalWrite(3, HIGH);
   }
   if(midicontroller.idProduct() == 0x1967){
@@ -84,12 +109,12 @@ void setup()
     Serial.println("USB Device is LaunchPad");
     digitalWrite(3, HIGH);
   }
+  // TODO make this a debug menu? 
   Serial.print( "Product ID of MIDI controller: ");
   Serial.println( (uint16_t) midicontroller.idProduct() );
+  Serial.print( "Vendor ID of MIDI controller: ");
   Serial.println( (uint16_t) midicontroller.idVendor() );
 }
-
-
 
 
 void checkDevices(){
@@ -102,7 +127,7 @@ void seqfun(){
     // update visual feedback on grid 
   if(sequencer._tickTime % 480 == 0){
     Serial.println("beat");
-    //MIDI.sendClock();
+    midi_module_output.sendClock();
     midi_module_output.sendNoteOn(74,126,10);
     //midi1.sendControlChange(120,120,1);
   }
@@ -138,9 +163,9 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
 
   // Convert Notes to Cell notation zero indexed from bottom left of grid 
 
-  // if(note < 30){return;} // don't listen to knob touches on push - need a better solution for this
-  // padsDown.push_back( pushNoteToCell(note) );
-  padsDown.push_back( LPPNoteToCell(note) );
+  if(note < 30){return;} // TODO don't listen to knob touches on push - need a better solution for this
+  padsDown.push_back( pushNoteToCell(note) );
+  //padsDown.push_back( LPPNoteToCell(note) ); // todo make a set of classes for different controllers? 
 
   if(padsDown.size() == 2){ // TODO handle region of size 1
     Region newRegion(padsDown[0], padsDown[1] );
@@ -240,30 +265,41 @@ void moveRegion(byte channel, byte number, byte value){
 }
 
 void blankGridDisplay(){
-  for ( char x = 0; x < 8; x++){
-    for ( char y = 0; y < 8; y++ ){
+  for ( uint8_t x = 0; x < 8; x++){
+    for ( uint8_t y = 0; y < 8; y++ ){
       //sendGridLPP( x, y, 0 );
       sendGrid( x, y, 0 );
     }
   }
 }
 
-void sendGridLPP( char x, char y, char col){
-  char note = ( y * 10) + 11 + x;
+void sendGridLPP( uint8_t x, uint8_t y, uint8_t col){
+  uint8_t note = ( y * 10) + 11 + x;
   midicontroller.sendNoteOn( note, col, 1); 
 }
 
-void sendGrid( char x, char y, char col){
-  char note = (y * 8) + x + 36;
+void sendGrid( uint8_t x, uint8_t y, uint8_t col){
+  uint8_t note = (y * 8) + x + 36;
   midicontroller.sendNoteOn( note, col, 1); 
 }
 
 void updateGridDisplay(){
  for ( GridCell &cell : grid.grid ){
    if( !cell.memberOf.empty() ){
-     sendGrid( cell.cell._x, cell.cell._y, 15 ); //  TODO add colour defined by region
+     sendGrid( cell.cell._x, cell.cell._y, 100 ); //  TODO add colour defined by region
    }else{
      sendGrid( cell.cell._x, cell.cell._y, 0 ); 
    }
  } 
+}
+
+
+// PUSH SYSEX Spec
+// 240,71,127,21,<24+line(0-3)>,0,<Nchars+1>,<Offset>,<Chars>,247
+// 240,71,127,21,25,0,13,4,"Hello World",247
+void lcdClearLine(uint8_t line){
+  //todo check that line is between 0 and 3 (or 1 and 4?)
+  line = 0;
+  //uint8_t message[] = {240,71,127,21,28+line,0,0,247};
+  //midicontroller.sendSysEx(10, message, true);
 }
