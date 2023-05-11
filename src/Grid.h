@@ -9,6 +9,7 @@
 
 struct GridCell {
   Cell cell;
+  Note * note = NULL;
   Region * _region = NULL;
   Sequence * _sequence = NULL;
   std::vector<Region> memberOf;
@@ -20,7 +21,7 @@ class Grid {
     bool addRegion(Region newRegion);
     bool requestMoveRegion(Region * region, int dx, int dy);
     bool checkOverlap(Region newRegion);
-    GridCell getCell(Cell cell);
+    GridCell* getCell(Cell cell);
     std::vector<GridCell> grid;
     Cell * _selectedCell;
     Region * _selectedRegion;

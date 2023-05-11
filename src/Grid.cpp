@@ -17,8 +17,8 @@ Grid::Grid(){
   }
 }
 
-GridCell Grid::getCell(Cell cell){
-   return this->grid[(cell._y*8) + cell._x];
+GridCell* Grid::getCell(Cell cell){
+   return &this->grid[(cell._y*8) + cell._x];
 }
 
 bool Grid::checkOverlap(Region newRegion){
@@ -54,12 +54,12 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
   // check all cells in region for overlapping
   for ( size_t i = 0; i < _region->cells.size(); i++ ){
 
-    GridCell thecell = getCell( _region->cells[i]);   
-    thecell.cell._x +=dx;
-    thecell.cell._y +=dy; 
+    GridCell * thecell = getCell( _region->cells[i]);   
+    thecell->cell._x +=dx;
+    thecell->cell._y +=dy; 
     std::vector<Region> linkedRegions;
     for( auto _region:_regions ){
-      if(thecell._region != NULL){
+      if(thecell->_region != NULL){
            linkedRegions.push_back(_region);
       }
     }

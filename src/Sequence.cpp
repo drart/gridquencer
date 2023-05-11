@@ -25,7 +25,8 @@ Sequence::Sequence(std::vector<int> inputvec){
             n.duration = (float)value*(1.0f/(float)value)*0.5f;
             n.probability = 127;
             n.mute = false;
-            n.index = (_beats-1)*480 + beatchop * i ;
+            n.startIndex = (_beats-1)*480 + beatchop * i ;
+            n.endIndex = n.startIndex + (int)(n.duration * _ticksPerBeat);
             this->_notes.push_back(n);
         }
     }

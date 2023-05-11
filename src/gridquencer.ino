@@ -132,14 +132,19 @@ void seqfun(){
     //midi1.sendControlChange(120,120,1);
   }
   for(Sequence * seq : sequencer._sequences ){
-    // check each note in each sequence to see if now is its time to shine
+    for(uint8_t i = 0; i < seq->_notes.size(); i++){
+      Note * n = &seq->_notes.at(i);
+      if(seq->_tickTime == n->startIndex){
+        n->playing = true;
+      }
+    }
     for(Note n : seq->_notes){
-      if(seq->_tickTime == n.index){
-        //Serial.println("Sending note out" );
+      if(seq->_tickTime == n.startIndex){
+        n.playing = true;
         // todo put the channels into the sequences
-        midi_module_output.sendNoteOn(100,100,10);
-        // MIDI.sendNoteOn(n.pitch, n.velocity, 10);
-        Serial.println(n.pitch);
+        midi_module_output.sendNoteOn(n.pitch,n.duration,10);
+        Serial.println(n.pitch); 
+
       }
     }
   }
@@ -148,7 +153,8 @@ void seqfun(){
 void loop() {
   myusb.Task();
   midicontroller.read();
-}
+  updateGridDisplay(); // refactor this function to look for changes from last call? 
+} 
 
 void OnNoteOn(byte channel, byte note, byte velocity) {
   Serial.print("Note On, ch=");
@@ -159,7 +165,6 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
   Serial.print(velocity);
   Serial.println();
   midicontroller.sendNoteOn(note, 10, channel);
-  //usbMIDI.sendNoteOn(note, velocity, channel);
 
   // Convert Notes to Cell notation zero indexed from bottom left of grid 
 
@@ -174,14 +179,16 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
       Serial.println("Region added to grid");
 
       std::vector<int> regionvec = newRegion.regionToVector(); 
-      // TODO deallocate memory at appropriate time
-      Sequence * newSequence = new Sequence(regionvec);
-      sequencer.queueSequence(newSequence); 
-      for(Note &n : newSequence->_notes){
-        Serial.println(n.index);
+      Sequence * newSequence = new Sequence(regionvec); // TODO deallocate memory at appropriate time
+
+      for(uint8_t i = 0; i < newRegion.cells.size(); i++){
+        GridCell * location = grid.getCell( newRegion.cells.at(i) );
+        location->note = &newSequence->_notes.at(i);
+        location->note->pitch = random(127);
+        location->_sequence = newSequence;
       }
 
-      // todo convert to JSON and print to console? 
+      sequencer.queueSequence(newSequence); 
       updateGridDisplay();
     }else{
       Serial.println("Region not added to grid");
@@ -283,23 +290,50 @@ void sendGrid( uint8_t x, uint8_t y, uint8_t col){
   midicontroller.sendNoteOn( note, col, 1); 
 }
 
+/*
 void updateGridDisplay(){
+  // Serial.println("updategriddisplay ");
  for ( GridCell &cell : grid.grid ){
    if( !cell.memberOf.empty() ){
      sendGrid( cell.cell._x, cell.cell._y, 100 ); //  TODO add colour defined by region
+     if(cell.note != NULL){
+      if(cell.note->playing == true){
+        // sendGrid( cell.cell._x, cell.cell._y, 110 ); 
+        Serial.println("playing");
+      }else{
+        // sendGrid( cell.cell._x, cell.cell._y, 100 ); 
+      }
+     }
    }else{
      sendGrid( cell.cell._x, cell.cell._y, 0 ); 
    }
  } 
 }
+*/
 
+void updateGridDisplay() {
+  for (GridCell &cell : grid.grid) {
+    if (cell.note != NULL) {
+      Serial.println("not null");
+      if (cell.note->playing == true) {
+        sendGrid(cell.cell._x, cell.cell._y, 110);
+        Serial.println("playing");
+      } else {
+        sendGrid(cell.cell._x, cell.cell._y, 100);
+      }
+    } else {
+      sendGrid(cell.cell._x, cell.cell._y, 0);
+    }
+  }
+}
 
 // PUSH SYSEX Spec
 // 240,71,127,21,<24+line(0-3)>,0,<Nchars+1>,<Offset>,<Chars>,247
 // 240,71,127,21,25,0,13,4,"Hello World",247
-void lcdClearLine(uint8_t line){
-  //todo check that line is between 0 and 3 (or 1 and 4?)
+void lcdClearLine(uint8_t line)
+{
+  // todo check that line is between 0 and 3 (or 1 and 4?)
   line = 0;
-  //uint8_t message[] = {240,71,127,21,28+line,0,0,247};
-  //midicontroller.sendSysEx(10, message, true);
+  // uint8_t message[] = {240,71,127,21,28+line,0,0,247};
+  // midicontroller.sendSysEx(10, message, true);
 }

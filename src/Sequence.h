@@ -14,7 +14,9 @@ struct Note
     float probability;        // 0-1
     bool mute;                //
     // gridquencer fields
-    int index;
+    int startIndex;
+    int endIndex;
+    bool playing;
 };
 
 class Sequence {
