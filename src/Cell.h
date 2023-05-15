@@ -1,12 +1,14 @@
 #ifndef G_CELL
 #define G_CELL
 
+#include <stdint.h>
+
 class Cell {
   public: 
     Cell( char c_x, char c_y );
     Cell();
-    char _x;
-    char _y;
+    uint8_t _x;
+    uint8_t _y;
       
 };
 

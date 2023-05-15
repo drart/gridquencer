@@ -14,8 +14,8 @@ struct Note
     float probability;        // 0-1
     bool mute;                //
     // gridquencer fields
-    int startIndex;
-    int endIndex;
+    uint16_t startIndex;
+    uint16_t endIndex;
     bool playing;
 };
 
@@ -29,9 +29,10 @@ class Sequence {
         bool playing;
 
     // private: 
-        int _tickTime; // should be a long or some other 64bit type? 
-        int _ticksPerBeat;
-        int _beats;
+        uint16_t _tickTime; 
+        uint16_t _ticksPerBeat;
+        uint16_t _beats;
+        uint16_t _durationInTicks;
         // float _length;
         // int _currentStep;
         std::vector<Note> _notes;

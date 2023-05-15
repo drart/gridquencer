@@ -96,8 +96,6 @@ void setup()
     uint8_t helloworldlcd[] = {240,71,127,21,25,0,14,0,34,104,101,108,108,111,32,119,111,114,108,100,34,247};
     midicontroller.sendSysEx(sizeof(helloworldlcd)/sizeof(uint8_t), helloworldlcd, true);
 
-
-
     digitalWrite(3, HIGH);
   }
   if(midicontroller.idProduct() == 0x1967){
@@ -114,12 +112,9 @@ void setup()
   Serial.println( (uint16_t) midicontroller.idProduct() );
   Serial.print( "Vendor ID of MIDI controller: ");
   Serial.println( (uint16_t) midicontroller.idVendor() );
-}
-
-
-void checkDevices(){
 
 }
+
 
 void seqfun(){
   sequencer.tick();
@@ -128,7 +123,7 @@ void seqfun(){
   if(sequencer._tickTime % 480 == 0){
     Serial.println("beat");
     midi_module_output.sendClock();
-    midi_module_output.sendNoteOn(74,126,10);
+    // midi_module_output.sendNoteOn(74,126,10);
     //midi1.sendControlChange(120,120,1);
   }
   for(Sequence * seq : sequencer._sequences ){
@@ -136,15 +131,12 @@ void seqfun(){
       Note * n = &seq->_notes.at(i);
       if(seq->_tickTime == n->startIndex){
         n->playing = true;
+        // Note resultingNote = resolveNoteProbabilities(n);
+        midi_module_output.sendNoteOn(n->pitch,n->velocity,10);
       }
-    }
-    for(Note n : seq->_notes){
-      if(seq->_tickTime == n.startIndex){
-        n.playing = true;
-        // todo put the channels into the sequences
-        midi_module_output.sendNoteOn(n.pitch,n.duration,10);
-        Serial.println(n.pitch); 
-
+      if(seq->_tickTime == n->endIndex){
+        n->playing = false;
+        midi_module_output.sendNoteOn(n->pitch, 0, 10); // config to send noteOff or noteOn velocity 0? 
       }
     }
   }
@@ -169,8 +161,7 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
   // Convert Notes to Cell notation zero indexed from bottom left of grid 
 
   if(note < 30){return;} // TODO don't listen to knob touches on push - need a better solution for this
-  padsDown.push_back( pushNoteToCell(note) );
-  //padsDown.push_back( LPPNoteToCell(note) ); // todo make a set of classes for different controllers? 
+  padsDown.push_back( pushNoteToCell(note) ); // todo make a set of classes for different controllers? 
 
   if(padsDown.size() == 2){ // TODO handle region of size 1
     Region newRegion(padsDown[0], padsDown[1] );
@@ -188,8 +179,7 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
         location->_sequence = newSequence;
       }
 
-      sequencer.queueSequence(newSequence); 
-      updateGridDisplay();
+      sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff
     }else{
       Serial.println("Region not added to grid");
     }
@@ -208,7 +198,6 @@ void OnNoteOff(byte channel, byte note, byte velocity) {
   if(!padsDown.empty()){
     padsDown.clear();
   }
-  updateGridDisplay();
 }
 
 void OnControlChange(byte channel, byte control, byte value) {
@@ -223,10 +212,8 @@ void OnControlChange(byte channel, byte control, byte value) {
     if(value == 127){
       blankGridDisplay();
     }else{
-      updateGridDisplay();
     }
   }
-  /// todo causes crash
   /*
   if(control == 45 && value == 127){
     bool ttt = grid.requestMoveRegion(grid._selectedRegion, 1,0);
@@ -290,36 +277,13 @@ void sendGrid( uint8_t x, uint8_t y, uint8_t col){
   midicontroller.sendNoteOn( note, col, 1); 
 }
 
-/*
-void updateGridDisplay(){
-  // Serial.println("updategriddisplay ");
- for ( GridCell &cell : grid.grid ){
-   if( !cell.memberOf.empty() ){
-     sendGrid( cell.cell._x, cell.cell._y, 100 ); //  TODO add colour defined by region
-     if(cell.note != NULL){
-      if(cell.note->playing == true){
-        // sendGrid( cell.cell._x, cell.cell._y, 110 ); 
-        Serial.println("playing");
-      }else{
-        // sendGrid( cell.cell._x, cell.cell._y, 100 ); 
-      }
-     }
-   }else{
-     sendGrid( cell.cell._x, cell.cell._y, 0 ); 
-   }
- } 
-}
-*/
-
 void updateGridDisplay() {
   for (GridCell &cell : grid.grid) {
     if (cell.note != NULL) {
-      Serial.println("not null");
       if (cell.note->playing == true) {
-        sendGrid(cell.cell._x, cell.cell._y, 110);
-        Serial.println("playing");
+        sendGrid(cell.cell._x, cell.cell._y, 50);
       } else {
-        sendGrid(cell.cell._x, cell.cell._y, 100);
+        sendGrid(cell.cell._x, cell.cell._y, 20);
       }
     } else {
       sendGrid(cell.cell._x, cell.cell._y, 0);
@@ -334,6 +298,6 @@ void lcdClearLine(uint8_t line)
 {
   // todo check that line is between 0 and 3 (or 1 and 4?)
   line = 0;
-  // uint8_t message[] = {240,71,127,21,28+line,0,0,247};
-  // midicontroller.sendSysEx(10, message, true);
+  uint8_t message[] = {240,71,127,21,uint8_t(28+line),0,0,247};
+  midicontroller.sendSysEx(10, message, true);
 }

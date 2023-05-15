@@ -3,19 +3,16 @@ Gridquencer
 
 A sequencer for grid interfaces, scattering my attention between javascript, ableton, nodejs, and teensy microcontrollers. 
 
-## Pre-requisites: 
+## Requirements
 
 - https://formulae.brew.sh/formula/teensy_loader_cli
+- Built with Platformio plugin for VS Code - https://platformio.org/install/ide?install=vscode
 
+### Supported Devices
 
-## Installation
-
-Checkout repo
-
-	> git clone git@github.com:drart/gridquencer.git
-
-Install PlatformIO plugin for VS Code
-
+- Ableton Push 1 (alpha)
+- Ableton Push 2 (conforms to Push 1 MIDI)
+- Novation Launchpad (roughed in but not enabled)
 
 ### Useful Links
 
@@ -28,7 +25,6 @@ Install PlatformIO plugin for VS Code
 - https://github.com/adamjmurray/ableton-midi-sculptor
 - https://gist.github.com/adamjmurray/21d7d3ae1f2ef8c66a19
 - https://github.com/gluon/AbletonLive9_RemoteScripts/blob/master/Push/StepSeqComponent.py
-
 
 Features to add:
     - region modifications

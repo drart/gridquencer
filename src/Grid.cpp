@@ -21,6 +21,7 @@ GridCell* Grid::getCell(Cell cell){
    return &this->grid[(cell._y*8) + cell._x];
 }
 
+// TODO provide method with a pointer to a region?
 bool Grid::checkOverlap(Region newRegion){
   for ( auto & cell : newRegion.cells ){
     if( !this->grid.at(cell._y*8 + cell._x).memberOf.empty() ){
