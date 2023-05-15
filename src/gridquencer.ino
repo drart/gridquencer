@@ -2,7 +2,8 @@
 // griquencer teensy 3.5,3.6,4.0,4.1
 // In Arduino IDE Set Serial Mode to MIDI
 //-----------------------------------------*/
-#include "USBHost_t36.h"
+#include <Arduino.h>
+#include <USBHost_t36.h>
 #include <MIDI.h>
 #include <TimerThree.h>
 #include <vector>
@@ -32,10 +33,9 @@ Grid grid;
 
 void setup()
 {
-//  while (!Serial) ; // wait for Arduino Serial Monitor
   Serial.begin(115200);
   Serial.println("USB Host Testing");
-  digitalWrite(LEDPIN, HIGH);
+  // digitalWrite(LEDPIN, HIGH);
 
   myusb.begin();
   midi_module_output.begin();
@@ -59,17 +59,14 @@ void setup()
   pinMode(3, OUTPUT);
 
   digitalWrite(2, HIGH);
-  delay(400);
+  delay(400); // is this necessary anymore? 
 
   String productname = (char*)midicontroller.product();
   Serial.print("Reported name of connected USB device: ");
   Serial.println(productname);
   // todo check for null? 
 
-  blankGridDisplay();  
-  // push2midispec.md
-  //#define ABLETON_VENDOR_ID 0x2982
-  //#define PUSH2_PRODUCT_ID  0x1967
+  //blankGridDisplay();  
   if(midicontroller.idVendor() == 0x2982 || midicontroller.idVendor() == 0x09E8){
     Serial.println("USB device made by Ableton");
     digitalWrite(3, HIGH);
@@ -89,30 +86,36 @@ void setup()
     midicontroller.sendSysEx(sizeof(line3)/sizeof(uint8_t), line3, true);
     midicontroller.sendSysEx(sizeof(line4)/sizeof(uint8_t), line4, true);
 
-
     // PUSH SYSEX Spec
     // 240,71,127,21,<24+line(0-3)>,0,<Nchars+1>,<Offset>,<Chars>,247
     // 240,71,127,21,25,0,14,4,"Hello World",247 /// string is length 13
-    uint8_t helloworldlcd[] = {240,71,127,21,25,0,14,0,34,104,101,108,108,111,32,119,111,114,108,100,34,247};
-    midicontroller.sendSysEx(sizeof(helloworldlcd)/sizeof(uint8_t), helloworldlcd, true);
+    String welcome = "Welcome to Gridquencer";
+    std::vector<uint8_t> message = {240,71,127,21,24,0};
+    message.push_back(welcome.length()+1);
+    message.push_back(0);
+    for(uint i= 0; i < welcome.length(); i++){
+      message.push_back(welcome.charAt(i));
+    }
+    message.push_back(247);
+    midicontroller.sendSysEx(message.size(), message.data(), true);
 
     digitalWrite(3, HIGH);
   }
   if(midicontroller.idProduct() == 0x1967){
+  // push2midispec.md
+  //#define ABLETON_VENDOR_ID 0x2982
+  //#define PUSH2_PRODUCT_ID  0x1967
     Serial.println("USB Device is Push 2");
     digitalWrite(3, HIGH);
   }
-  /// launchpad pro mk3 productID 0x123
   if(midicontroller.idProduct() == 0x123){ 
     Serial.println("USB Device is LaunchPad");
     digitalWrite(3, HIGH);
   }
-  // TODO make this a debug menu? 
   Serial.print( "Product ID of MIDI controller: ");
   Serial.println( (uint16_t) midicontroller.idProduct() );
   Serial.print( "Vendor ID of MIDI controller: ");
   Serial.println( (uint16_t) midicontroller.idVendor() );
-
 }
 
 
