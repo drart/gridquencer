@@ -31,6 +31,7 @@ Sequence::Sequence(std::vector<int> inputvec){
             n.startIndex = (beatz-1)*this->_ticksPerBeat+ beatchop * i ;
             n.endIndex = n.startIndex + (int)(n.duration * this->_ticksPerBeat);
             n.endIndex = n.endIndex % this->_durationInTicks;
+            n.playing = false;
             this->_notes.push_back(n);
         }
     }

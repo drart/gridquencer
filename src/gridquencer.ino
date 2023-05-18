@@ -66,7 +66,6 @@ void setup()
   Serial.println(productname);
   // todo check for null? 
 
-  //blankGridDisplay();  
   if(midicontroller.idVendor() == 0x2982 || midicontroller.idVendor() == 0x09E8){
     Serial.println("USB device made by Ableton");
     digitalWrite(3, HIGH);
@@ -74,7 +73,7 @@ void setup()
   if(midicontroller.idProduct() == 0x15){
     Serial.println("USB Device is Push 1");
     // https://github.com/Carlborg/hardpush/blob/master/hardpush.ino#L436
-    byte sysexUserModeMessage[] = {240, 71, 127, 21, 98, 0, 1, 0, 247};
+    uint8_t sysexUserModeMessage[] = {240, 71, 127, 21, 98, 0, 1, 0, 247};
     midicontroller.sendSysEx(9, sysexUserModeMessage, true, 1);
 
     uint8_t line1[] = {240,71,127,21,28,0,0,247};
@@ -93,11 +92,15 @@ void setup()
     std::vector<uint8_t> message = {240,71,127,21,24,0};
     message.push_back(welcome.length()+1);
     message.push_back(0);
-    for(uint i= 0; i < welcome.length(); i++){
+    for(uint8_t i = 0; i < welcome.length(); i++){
       message.push_back(welcome.charAt(i));
     }
     message.push_back(247);
     midicontroller.sendSysEx(message.size(), message.data(), true);
+
+    midicontroller.sendControlChange(41, 127, 1); // 1/16t button
+    midicontroller.sendControlChange(87, 127, 1); // new button
+    midicontroller.sendControlChange(50, 127, 1); // note button
 
     digitalWrite(3, HIGH);
   }
@@ -118,16 +121,13 @@ void setup()
   Serial.println( (uint16_t) midicontroller.idVendor() );
 }
 
-
 void seqfun(){
   sequencer.tick();
     // service notes for tick index
     // update visual feedback on grid 
-  if(sequencer._tickTime % 480 == 0){
+  if(sequencer._tickTime % 480 == 0){ // 480 should be taken from the sequencer
     Serial.println("beat");
-    midi_module_output.sendClock();
-    // midi_module_output.sendNoteOn(74,126,10);
-    //midi1.sendControlChange(120,120,1);
+    midi_module_output.sendClock(); // configure for more standard rates
   }
   for(Sequence * seq : sequencer._sequences ){
     for(uint8_t i = 0; i < seq->_notes.size(); i++){
@@ -159,7 +159,6 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
   Serial.print(", velocity=");
   Serial.print(velocity);
   Serial.println();
-  midicontroller.sendNoteOn(note, 10, channel);
 
   // Convert Notes to Cell notation zero indexed from bottom left of grid 
 
@@ -187,6 +186,13 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
       Serial.println("Region not added to grid");
     }
   }
+  if(padsDown.size() == 1){
+    grid._selectedCell = grid.getCell(padsDown.at(0));
+    if(grid._selectedCell->note != NULL){
+      Serial.println(grid._selectedCell->note->pitch);
+      Serial.println(grid._selectedCell->note->velocity);
+    }
+  }
 }
 
 void OnNoteOff(byte channel, byte note, byte velocity) {
@@ -196,9 +202,10 @@ void OnNoteOff(byte channel, byte note, byte velocity) {
   Serial.print(note);
   Serial.println();
 
-  midicontroller.sendNoteOff(note,10,channel);
-
-  if(!padsDown.empty()){
+  if(padsDown.size() == 1){
+    // create a region of size 1
+  }
+  if(!padsDown.empty()){ // can I remove this check? 
     padsDown.clear();
   }
 }
@@ -213,7 +220,7 @@ void OnControlChange(byte channel, byte control, byte value) {
   Serial.println();
   if(control == 30 ){ // setup button
     if(value == 127){
-      blankGridDisplay();
+      // blankGridDisplay();
     }else{
     }
   }

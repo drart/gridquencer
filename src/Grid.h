@@ -24,7 +24,7 @@ class Grid {
     bool checkOverlap(Region * newRegion);
     GridCell* getCell(Cell cell);
     std::vector<GridCell> grid;
-    Cell * _selectedCell;
+    GridCell * _selectedCell;
     Region * _selectedRegion;
   // private: 
     uint8_t _rows;
