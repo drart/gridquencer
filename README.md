@@ -5,6 +5,8 @@ A sequencer for grid interfaces, scattering my attention between javascript, abl
 
 ## Requirements
 
+- Teensy 3.6 or 4.1 (should work with 4.0)
+- USB Host cable and MIDI output (currently prototyping with attowatt i2c2midi eurorack module: https://github.com/attowatt/i2c2midi)
 - https://formulae.brew.sh/formula/teensy_loader_cli
 - Built with Platformio plugin for VS Code - https://platformio.org/install/ide?install=vscode
 
@@ -18,16 +20,13 @@ A sequencer for grid interfaces, scattering my attention between javascript, abl
 
 - https://github.com/Carlborg/hardpush/
 - https://structure-void.com/ableton-live-push-and-scripts/#usermode
-- http://www.edsko.net/2020/12/26/trichords-part1/
-- http://www.edsko.net/2020/12/27/trichords-part2/
-- https://github.com/adamjmurray/ableton-push.js
 - https://github.com/adamjmurray/ableton-launchpad-sequencer
 - https://github.com/adamjmurray/ableton-midi-sculptor
 - https://gist.github.com/adamjmurray/21d7d3ae1f2ef8c66a19
-- https://github.com/gluon/AbletonLive9_RemoteScripts/blob/master/Push/StepSeqComponent.py
 
 Features to add:
     - region modifications
+    - change tempo
     - note distribution functions 
     - save to json?
     - load from json?

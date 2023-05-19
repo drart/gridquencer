@@ -229,6 +229,30 @@ void OnControlChange(byte channel, byte control, byte value) {
     bool ttt = grid.requestMoveRegion(grid._selectedRegion, 1,0);
   }
   */
+  int8_t knobvaldiff = value;
+  if(knobvaldiff > 64){
+    knobvaldiff = -(128 - knobvaldiff);
+  }
+  switch(control){
+    case 71:
+      if(grid._selectedCell->note != NULL){
+        float thenote = grid._selectedCell->note->pitch;
+        thenote += float(knobvaldiff);
+        thenote = constrain(thenote, 0, 127);
+        grid._selectedCell->note->pitch = thenote;
+        Serial.println(grid._selectedCell->note->pitch);
+      }
+    break;
+    case 72:
+    break;
+    case 73:
+    break;
+    case 74:
+    break;
+  }
+
+
+
 }
 
 Cell LPPNoteToCell( byte note ){
