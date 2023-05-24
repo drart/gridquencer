@@ -31,6 +31,9 @@ Sequencer sequencer(60.0f, 480);  // bpm, ticks per beat. 480 allows for good re
 std::vector<Cell> padsDown;
 Grid grid;
 
+mode subdivisionMode = mode::SIXTEENTH_TUPLET; // todo better naming? 
+
+
 void setup()
 {
   Serial.begin(115200);
@@ -152,13 +155,13 @@ void loop() {
 } 
 
 void OnNoteOn(byte channel, byte note, byte velocity) {
-  Serial.print("Note On, ch=");
-  Serial.print(channel);
-  Serial.print(", note=");
-  Serial.print(note);
-  Serial.print(", velocity=");
-  Serial.print(velocity);
-  Serial.println();
+  // Serial.print("Note On, ch=");
+  // Serial.print(channel);
+  // Serial.print(", note=");
+  // Serial.print(note);
+  // Serial.print(", velocity=");
+  // Serial.print(velocity);
+  // Serial.println();
 
   // Convert Notes to Cell notation zero indexed from bottom left of grid 
 
@@ -169,29 +172,30 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
     Region newRegion(padsDown[0], padsDown[1] );
 
     if ( grid.addRegion( newRegion ) ){
-      Serial.println("Region added to grid");
+      // Serial.println("Region added to grid");
 
       std::vector<int> regionvec = newRegion.regionToVector(); 
       Sequence * newSequence = new Sequence(regionvec); // TODO deallocate memory at appropriate time
+      // Sequence * otherSequence = new Sequence(regionvec, subdivisionMode); // TODO switch to this
 
-      for(uint8_t i = 0; i < newRegion.cells.size(); i++){
+      for(uint8_t i = 0; i < newRegion.cells.size(); i++){ // todo move this into a function
         GridCell * location = grid.getCell( newRegion.cells.at(i) );
         location->note = &newSequence->_notes.at(i);
         location->note->pitch = random(127);
         location->_sequence = newSequence;
       }
 
-      sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff
+      sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
     }else{
       Serial.println("Region not added to grid");
     }
   }
   if(padsDown.size() == 1){
     grid._selectedCell = grid.getCell(padsDown.at(0));
-    if(grid._selectedCell->note != NULL){
-      Serial.println(grid._selectedCell->note->pitch);
-      Serial.println(grid._selectedCell->note->velocity);
-    }
+    // if(grid._selectedCell->note != NULL){
+      // Serial.println(grid._selectedCell->note->pitch);
+      // Serial.println(grid._selectedCell->note->velocity);
+    // }
   }
 }
 

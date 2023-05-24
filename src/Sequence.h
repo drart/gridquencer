@@ -19,10 +19,24 @@ struct Note
     bool playing;
 };
 
+
+enum class mode {
+    QUARTER,
+    QUARTER_TUPLET,
+    EIGHTH,
+    EIGHT_TUPLET,
+    SIXTEENTH,
+    SIXTEENTH_TUPLET,
+    THIRTYSECOND,
+    THIRTYSECOND_TUPLET
+};
+
 class Sequence {
     public: 
         Sequence();
         Sequence(std::vector<int>);
+        Sequence(std::vector<int>, mode m);
+        void changeMode(mode m); // set the subdivision mode
         void tick();
         bool mute;
         bool loop;
