@@ -32,7 +32,81 @@ std::vector<Cell> padsDown;
 Grid grid;
 
 mode subdivisionMode = mode::SIXTEENTH_TUPLET; // todo better naming? 
+enum class regionModeEntry {
+  NEW,
+  MUTE,
+  DELETE
+  // MOVE?
+};
 
+
+enum PUSH2COLOURS { // https://gist.github.com/adamjmurray/21d7d3ae1f2ef8c66a19
+  OFF,
+  DARK_GREY,
+  GREY,
+  WHITE,
+  WHITE_RED,
+  RED_BRIGHT,
+  RED,
+  RED_DIM,
+  RED_AMBER,
+  AMBER_BRIGHT,
+  AMBER,
+  AMBER_DIM,
+  AMBER_YELLOW,
+  YELLOW_BRIGHT,
+  YELLOW,
+  YELLOW_DIM,
+  YELLOW_LIME,
+  LIME_BRIGHT,
+  LIME,
+  LIME_DIM,
+  LIME_GREEN,
+  GREEN_BRIGHT,
+  GREEN,
+  GREEN_DIM,
+  GREEN_SPRING,
+  SPRING_BRIGHT,
+  SPRING,
+  SPRING_DIM,
+  SPRING_TURQUOISE,
+  TURQUOISE_BRIGHT,
+  TURQUOISE,
+  TURQUOISE_DIM,
+  TURQUOISE_CYAN,
+  CYAN_BRIGHT,
+  CYAN,
+  CYAN_DIM,
+  CYAN_SKY,
+  SKY_BRIGHT,
+  SKY,
+  SKY_DIM,
+  SKY_OCEAN,
+  OCEAN_BRIGHT,
+  OCEAN,
+  OCEAN_DIM,
+  OCEAN_BLUE,
+  BLUE_BRIGHT,
+  BLUE,
+  BLUE_DIM,
+  BLUE_ORCHID,
+  ORCHID_BRIGHT,
+  ORCHID,
+  ORCHID_DIM,
+  ORCHID_MAGENTA,
+  MAGENTA_BRIGHT,
+  MAGENTA,
+  MAGENTA_DIM,
+  MAGENTA_PINK,
+  PINK_BRIGHT,
+  PINK,
+  PINK_DIM,
+  ORANGE_BRIGHT,
+  ORANGE,
+  ORANGE_DIM
+};
+
+regionModeEntry regionMode = regionModeEntry::NEW;
 
 void setup()
 {
@@ -137,7 +211,7 @@ void seqfun(){
       Note * n = &seq->_notes.at(i);
       if(seq->_tickTime == n->startIndex){
         n->playing = true;
-        // Note resultingNote = resolveNoteProbabilities(n);
+        // Note resultingNote = resolveNoteProbabilities(n); // also velocity variance? 
         midi_module_output.sendNoteOn(n->pitch,n->velocity,10);
       }
       if(seq->_tickTime == n->endIndex){
@@ -196,15 +270,30 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
       // Serial.println(grid._selectedCell->note->pitch);
       // Serial.println(grid._selectedCell->note->velocity);
     // }
+    switch(regionMode){
+      case regionModeEntry::NEW:
+      break;
+      case regionModeEntry::MUTE:
+        if(grid._selectedCell->note->mute == true){
+          grid._selectedCell->note->mute = false;
+        }else{
+          grid._selectedCell->note->mute = true;
+        }
+      break;
+      case regionModeEntry::DELETE:
+      break;
+    }
+    // updateLCD(grid._selectedCell); // TODO 
   }
 }
 
 void OnNoteOff(byte channel, byte note, byte velocity) {
-  Serial.print("Note Off, ch=");
-  Serial.print(channel);
-  Serial.print(", note=");
-  Serial.print(note);
-  Serial.println();
+  // set to debug? 
+  // Serial.print("Note Off, ch=");
+  // Serial.print(channel);
+  // Serial.print(", note=");
+  // Serial.print(note);
+  // Serial.println();
 
   if(padsDown.size() == 1){
     // create a region of size 1
@@ -238,7 +327,7 @@ void OnControlChange(byte channel, byte control, byte value) {
     knobvaldiff = -(128 - knobvaldiff);
   }
   switch(control){
-    case 71:
+    case 71: // knob 1
       if(grid._selectedCell->note != NULL){
         float thenote = grid._selectedCell->note->pitch;
         thenote += float(knobvaldiff);
@@ -253,10 +342,19 @@ void OnControlChange(byte channel, byte control, byte value) {
     break;
     case 74:
     break;
+    case 45:
+      grid.requestMoveRegion(grid._selectedRegion, 1, 0);
+    break;
+    case 46:
+      grid.requestMoveRegion(grid._selectedRegion,-1,0);
+    break;
+    case 47:
+      grid.requestMoveRegion(grid._selectedRegion,0,1);
+    break;
+    case 48:
+      grid.requestMoveRegion(grid._selectedRegion,0,1);
+    break;
   }
-
-
-
 }
 
 Cell LPPNoteToCell( byte note ){
@@ -277,23 +375,6 @@ Cell pushNoteToCell( byte note ){
 
 void LPPM3NoteOn(byte channel, byte note, byte velocity){
   Serial.println(note);
-}
-
-
-// TODO move to grid or region? 
-void moveRegion(byte channel, byte number, byte value){
-  if(number == 45) {
-    grid.requestMoveRegion(grid._selectedRegion,1,0);
-  }
-  else if(number == 46) {
-    grid.requestMoveRegion(grid._selectedRegion,-1,0);
-  }
-  else if(number == 47) {
-    grid.requestMoveRegion(grid._selectedRegion,0,1);
-  }
-  else if(number == 48) {
-    grid.requestMoveRegion(grid._selectedRegion,0,1);
-  }
 }
 
 void blankGridDisplay(){
@@ -319,14 +400,19 @@ void updateGridDisplay() {
   for (GridCell &cell : grid.grid) {
     if (cell.note != NULL) {
       if (cell.note->playing == true) {
-        sendGrid(cell.cell._x, cell.cell._y, 50);
+        sendGrid(cell.cell._x, cell.cell._y, PUSH2COLOURS::RED_BRIGHT);
       } else {
-        sendGrid(cell.cell._x, cell.cell._y, 20);
+        /// get colour of sequence
+        uint8_t sq = PUSH2COLOURS::GREY;
+        sendGrid(cell.cell._x, cell.cell._y, sq);
       }
     } else {
-      sendGrid(cell.cell._x, cell.cell._y, 0);
+      sendGrid(cell.cell._x, cell.cell._y, PUSH2COLOURS::OFF);
     }
   }
+}
+
+void updateLCD(){
 }
 
 // PUSH SYSEX Spec
@@ -339,3 +425,4 @@ void lcdClearLine(uint8_t line)
   uint8_t message[] = {240,71,127,21,uint8_t(28+line),0,0,247};
   midicontroller.sendSysEx(10, message, true);
 }
+
