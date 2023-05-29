@@ -37,6 +37,6 @@ std::vector<int> Region::regionToVector(){
   return thearray;
 }
 
-int Region::numberOfSteps(){
+uint8_t Region::numberOfSteps(){
   return (int)cells.size();
 }

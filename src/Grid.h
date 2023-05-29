@@ -18,7 +18,7 @@ struct GridCell {
 class Grid {
   public: 
     Grid();
-    bool addRegion(Region newRegion);
+    bool addRegion(Region * newRegion);
     bool requestMoveRegion(Region * region, int dx, int dy);
     bool checkOverlap(Region newRegion);
     bool checkOverlap(Region * newRegion);
@@ -30,7 +30,7 @@ class Grid {
     uint8_t _rows;
     uint8_t _columns;
     bool _allowOverlap;
-    std::vector<Region> _regions;
+    std::vector<Region*> _regions;
 
 };
 

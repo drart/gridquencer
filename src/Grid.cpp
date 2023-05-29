@@ -2,9 +2,9 @@
 #include <vector>
 
 Grid::Grid(){
-  _allowOverlap = false;
-  _columns = 8;
-  _rows = 8;
+  this->_allowOverlap = false;
+  this->_columns = 8;
+  this->_rows = 8;
 
   // todo grid.reserve()? 
   for( char y = 0; y < _rows; y++){
@@ -21,30 +21,26 @@ GridCell* Grid::getCell(Cell cell){
    return &this->grid[(cell._y*8) + cell._x];
 }
 
-// TODO provide method with a pointer to a region?
-bool Grid::checkOverlap(Region newRegion){
-  for ( auto & cell : newRegion.cells ){
-    if( !this->grid.at(cell._y*8 + cell._x).memberOf.empty() ){
+bool Grid::checkOverlap(Region * newRegion){
+  for(auto & cell : newRegion->cells){
+    if(!this->grid.at(cell._y*8 + cell._x).memberOf.empty() ){
       return false;
     }
   }
   return true;
 }
 
-bool Grid::addRegion(Region newRegion){
+bool Grid::addRegion(Region * newRegion){
   if( !this->checkOverlap(newRegion) ){
     return false;
   }
 
-  for(auto &cell: newRegion.cells ){
-    GridCell newCell;
-    newCell.cell = cell;
-    newCell._region = &newRegion;
-    newCell.memberOf.push_back(newRegion);
-    this->grid.at(cell._y*8 + cell._x) = newCell;
+  for(auto &cell: newRegion->cells ){
+   this->grid.at(cell._y*8 + cell._x)._region = newRegion;
+   this->grid.at(cell._y*8 + cell._x).memberOf.push_back(*newRegion);
   }
-  _regions.push_back(newRegion);
-  _selectedRegion = &newRegion;
+  this->_regions.push_back(newRegion);
+  this->_selectedRegion = newRegion;
   return true;
 }
 
@@ -53,6 +49,7 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
   std::vector<Region> overlappingRegions;
   
   // check all cells in region for overlapping
+  /*
   for ( size_t i = 0; i < _region->cells.size(); i++ ){
 
     GridCell * thecell = getCell( _region->cells[i]);   
@@ -61,7 +58,7 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
     std::vector<Region> linkedRegions;
     for( auto _region:_regions ){
       if(thecell->_region != NULL){
-           linkedRegions.push_back(_region);
+           //linkedRegions.push_back(_region);
       }
     }
   
@@ -80,6 +77,7 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
     //Serial.println("Region move request denied: Overlapping other region");
     return false;
   }
-
   return true;
+*/
+  return false;
 }

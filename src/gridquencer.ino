@@ -242,23 +242,23 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
   if(note < 30){return;} // TODO don't listen to knob touches on push - need a better solution for this
   padsDown.push_back( pushNoteToCell(note) ); // todo make a set of classes for different controllers? 
 
-  if(padsDown.size() == 2){ // TODO handle region of size 1
-    Region newRegion(padsDown[0], padsDown[1] );
+  if(padsDown.size() == 2){ 
+    Region * newRegion  = new Region(padsDown[0], padsDown[1] );
 
+    newRegion->colour = 10 + (grid._regions.size() * 4); // TODO will be a problem if a region is deleted 
     if ( grid.addRegion( newRegion ) ){
-      // Serial.println("Region added to grid");
 
-      std::vector<int> regionvec = newRegion.regionToVector(); 
+      std::vector<int> regionvec = newRegion->regionToVector(); 
       Sequence * newSequence = new Sequence(regionvec); // TODO deallocate memory at appropriate time
-      // Sequence * otherSequence = new Sequence(regionvec, subdivisionMode); // TODO switch to this
+      // Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO switch to this
 
-      for(uint8_t i = 0; i < newRegion.cells.size(); i++){ // todo move this into a function
-        GridCell * location = grid.getCell( newRegion.cells.at(i) );
+      for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
+        GridCell * location = grid.getCell( newRegion->cells.at(i) );
         location->note = &newSequence->_notes.at(i);
         location->note->pitch = random(127);
         location->_sequence = newSequence;
+        Serial.println(location->_region->colour);
       }
-
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
     }else{
       Serial.println("Region not added to grid");
@@ -288,7 +288,6 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
 }
 
 void OnNoteOff(byte channel, byte note, byte velocity) {
-  // set to debug? 
   // Serial.print("Note Off, ch=");
   // Serial.print(channel);
   // Serial.print(", note=");
@@ -343,16 +342,19 @@ void OnControlChange(byte channel, byte control, byte value) {
     case 74:
     break;
     case 45:
-      grid.requestMoveRegion(grid._selectedRegion, 1, 0);
+      if(value == 127){
+        // grid.requestMoveRegion(grid._selectedRegion, 1, 0);
+      }
     break;
     case 46:
-      grid.requestMoveRegion(grid._selectedRegion,-1,0);
+
+      // grid.requestMoveRegion(grid._selectedRegion,-1,0);
     break;
     case 47:
-      grid.requestMoveRegion(grid._selectedRegion,0,1);
+      // grid.requestMoveRegion(grid._selectedRegion,0,1);
     break;
     case 48:
-      grid.requestMoveRegion(grid._selectedRegion,0,1);
+      // grid.requestMoveRegion(grid._selectedRegion,0,1);
     break;
   }
 }
@@ -397,14 +399,14 @@ void sendGrid( uint8_t x, uint8_t y, uint8_t col){
 }
 
 void updateGridDisplay() {
-  for (GridCell &cell : grid.grid) {
+  for (GridCell & cell : grid.grid) {
     if (cell.note != NULL) {
       if (cell.note->playing == true) {
-        sendGrid(cell.cell._x, cell.cell._y, PUSH2COLOURS::RED_BRIGHT);
+        sendGrid(cell.cell._x, cell.cell._y, PUSH2COLOURS::WHITE);
       } else {
-        /// get colour of sequence
-        uint8_t sq = PUSH2COLOURS::GREY;
-        sendGrid(cell.cell._x, cell.cell._y, sq);
+        //Serial.println(cell._region->colour);
+        uint8_t rc = uint8_t(cell._region->colour);
+        sendGrid(cell.cell._x, cell.cell._y, rc);
       }
     } else {
       sendGrid(cell.cell._x, cell.cell._y, PUSH2COLOURS::OFF);

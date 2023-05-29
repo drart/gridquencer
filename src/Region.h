@@ -10,16 +10,17 @@ class Region{
     Region();
     Region(Cell startPoint, Cell endPoint);
     std::vector<int> regionToVector(); // return [3,3,3] for a 3x3 grid
-    int numberOfSteps();
+    uint8_t numberOfSteps();
     std::vector<Cell> cells;
     // std::vector<std::vector<Cell>> rows;
-    // std::vector<Cell> steps;
   // private:
-    int _beats;
+    uint8_t _beats;
     Cell _bottomLeft;
     Cell _bottomRight;
     Cell _topLeft;
     Cell _topRight;
+
+    uint8_t colour;
 };
 
 #endif
