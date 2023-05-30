@@ -32,7 +32,7 @@ std::vector<Cell> padsDown;
 Grid grid;
 
 mode subdivisionMode = mode::SIXTEENTH_TUPLET; // todo better naming? 
-enum class regionModeEntry {
+enum class entryMode{
   NEW,
   MUTE,
   DELETE
@@ -106,7 +106,8 @@ enum PUSH2COLOURS { // https://gist.github.com/adamjmurray/21d7d3ae1f2ef8c66a19
   ORANGE_DIM
 };
 
-regionModeEntry regionMode = regionModeEntry::NEW;
+entryMode regionMode = entryMode::NEW;
+entryMode noteMode   = entryMode::NEW;
 
 void setup()
 {
@@ -178,6 +179,15 @@ void setup()
     midicontroller.sendControlChange(41, 127, 1); // 1/16t button
     midicontroller.sendControlChange(87, 127, 1); // new button
     midicontroller.sendControlChange(50, 127, 1); // note button
+    midicontroller.sendControlChange(60, 1, 1); // mute button
+
+    midicontroller.sendControlChange(43, 1, 1); 
+    midicontroller.sendControlChange(42, 1, 1); 
+    midicontroller.sendControlChange(41, 1, 1); 
+    midicontroller.sendControlChange(39, 1, 1); 
+    midicontroller.sendControlChange(38, 1, 1); 
+    midicontroller.sendControlChange(37, 1, 1); 
+    midicontroller.sendControlChange(36, 1, 1); 
 
     digitalWrite(3, HIGH);
   }
@@ -212,6 +222,9 @@ void seqfun(){
       if(seq->_tickTime == n->startIndex){
         n->playing = true;
         // Note resultingNote = resolveNoteProbabilities(n); // also velocity variance? 
+        if(n->mute == true){
+          Serial.println("muted note");
+        }
         midi_module_output.sendNoteOn(n->pitch,n->velocity,10);
       }
       if(seq->_tickTime == n->endIndex){
@@ -243,26 +256,29 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
   padsDown.push_back( pushNoteToCell(note) ); // todo make a set of classes for different controllers? 
 
   if(padsDown.size() == 2){ 
-    Region * newRegion  = new Region(padsDown[0], padsDown[1] );
+    addRegion(padsDown[0], padsDown[1]);
+    // Region * newRegion  = new Region(padsDown[0], padsDown[1] );
 
-    newRegion->colour = 10 + (grid._regions.size() * 4); // TODO will be a problem if a region is deleted 
-    if ( grid.addRegion( newRegion ) ){
+    // newRegion->colour = 10 + (grid._regions.size() * 4); // TODO will be a problem if a region is deleted 
+    // if ( grid.addRegion( newRegion ) ){
 
-      std::vector<int> regionvec = newRegion->regionToVector(); 
-      Sequence * newSequence = new Sequence(regionvec); // TODO deallocate memory at appropriate time
-      // Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO switch to this
+    //   std::vector<int> regionvec = newRegion->regionToVector(); 
+    //   Sequence * newSequence = new Sequence(regionvec); // TODO deallocate memory at appropriate time
+    //   // Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO switch to this
 
-      for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
-        GridCell * location = grid.getCell( newRegion->cells.at(i) );
-        location->note = &newSequence->_notes.at(i);
-        location->note->pitch = random(127);
-        location->_sequence = newSequence;
-        Serial.println(location->_region->colour);
-      }
-      sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
-    }else{
-      Serial.println("Region not added to grid");
-    }
+    //   for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
+    //     GridCell * location = grid.getCell( newRegion->cells.at(i) );
+    //     location->note = &newSequence->_notes.at(i);
+    //     location->note->pitch = random(127);
+    //     location->_sequence = newSequence;
+    //     Serial.println(location->_region->colour);
+    //   }
+    //   sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
+    // }else{
+    //   delete newRegion;
+    //   Serial.println("Region not added to grid");
+    //   return;
+    // }
   }
   if(padsDown.size() == 1){
     grid._selectedCell = grid.getCell(padsDown.at(0));
@@ -271,19 +287,17 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
       // Serial.println(grid._selectedCell->note->velocity);
     // }
     switch(regionMode){
-      case regionModeEntry::NEW:
-      break;
-      case regionModeEntry::MUTE:
+      case entryMode::MUTE:
         if(grid._selectedCell->note->mute == true){
           grid._selectedCell->note->mute = false;
         }else{
           grid._selectedCell->note->mute = true;
         }
+        Serial.println(grid._selectedCell->note->mute);
       break;
-      case regionModeEntry::DELETE:
+      case entryMode::DELETE:
       break;
     }
-    // updateLCD(grid._selectedCell); // TODO 
   }
 }
 
@@ -295,7 +309,9 @@ void OnNoteOff(byte channel, byte note, byte velocity) {
   // Serial.println();
 
   if(padsDown.size() == 1){
-    // create a region of size 1
+    if(regionMode == entryMode::NEW){
+      addRegion(padsDown[0], padsDown[0]);
+    }
   }
   if(!padsDown.empty()){ // can I remove this check? 
     padsDown.clear();
@@ -310,21 +326,12 @@ void OnControlChange(byte channel, byte control, byte value) {
   Serial.print(", value=");
   Serial.print(value);
   Serial.println();
-  if(control == 30 ){ // setup button
-    if(value == 127){
-      // blankGridDisplay();
-    }else{
-    }
-  }
-  /*
-  if(control == 45 && value == 127){
-    bool ttt = grid.requestMoveRegion(grid._selectedRegion, 1,0);
-  }
-  */
+  
   int8_t knobvaldiff = value;
   if(knobvaldiff > 64){
     knobvaldiff = -(128 - knobvaldiff);
   }
+
   switch(control){
     case 71: // knob 1
       if(grid._selectedCell->note != NULL){
@@ -355,6 +362,20 @@ void OnControlChange(byte channel, byte control, byte value) {
     break;
     case 48:
       // grid.requestMoveRegion(grid._selectedRegion,0,1);
+    break;
+    case 60:
+      if(value == 127){
+        regionMode = entryMode::MUTE;
+        midicontroller.sendControlChange(60, 10, 1);
+        midicontroller.sendControlChange(87, 1, 1);
+      }
+    break;
+    case 87:
+      if(value == 127){
+        regionMode = entryMode::NEW;
+        midicontroller.sendControlChange(87, 12, 1);
+        midicontroller.sendControlChange(60, 1, 1);
+      }
     break;
   }
 }
@@ -428,3 +449,26 @@ void lcdClearLine(uint8_t line)
   midicontroller.sendSysEx(10, message, true);
 }
 
+void addRegion(Cell start, Cell end){
+    Region * newRegion  = new Region(start, end);
+
+    newRegion->colour = 10 + (grid._regions.size() * 4); // TODO will be a problem if a region is deleted 
+    if ( grid.addRegion( newRegion ) ){
+
+      std::vector<int> regionvec = newRegion->regionToVector(); 
+      Sequence * newSequence = new Sequence(regionvec); // TODO deallocate memory at appropriate time
+      // Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO switch to this
+
+      for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
+        GridCell * location = grid.getCell( newRegion->cells.at(i) );
+        location->note = &newSequence->_notes.at(i);
+        location->note->pitch = random(127);
+        location->_sequence = newSequence;
+      }
+      sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
+    }else{
+      delete newRegion;
+      Serial.println("Region not added to grid");
+      return;
+    }
+}
