@@ -46,7 +46,8 @@ class Sequence {
         uint16_t _tickTime; 
         uint16_t _ticksPerBeat;
         uint16_t _beats;
-        uint16_t _durationInTicks;
+        uint16_t _noteDurationInTicks;
+        uint16_t _sequenceLengthInTicks;
         // float _length;
         // int _currentStep;
         std::vector<Note> _notes;

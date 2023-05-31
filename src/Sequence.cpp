@@ -13,7 +13,7 @@ Sequence::Sequence(std::vector<int> inputvec){
     this->playing = false;
     this->_beats = inputvec.size();
     this->_ticksPerBeat = 480; // todo clean up
-    this->_durationInTicks = (this->_ticksPerBeat * this->_beats);
+    this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
 
     uint8_t beatz = 0;
     for(int value : inputvec){
@@ -31,7 +31,7 @@ Sequence::Sequence(std::vector<int> inputvec){
             n.mute = false;
             n.startIndex = (beatz-1)*this->_ticksPerBeat+ beatchop * i ;
             n.endIndex = n.startIndex + (int)(n.duration * this->_ticksPerBeat);
-            n.endIndex = n.endIndex % this->_durationInTicks;
+            n.endIndex = n.endIndex % this->_sequenceLengthInTicks;
             n.playing = false;
             this->_notes.push_back(n);
         }
@@ -51,52 +51,59 @@ Sequence::Sequence(std::vector<int> inputvec, mode m){
     int totalbeats = std::accumulate(inputvec.begin(), inputvec.end(), 0);
     switch(m){
         case mode::QUARTER:
-        this->_ticksPerBeat *= 4;
-        this->_durationInTicks = (totalbeats * this->_ticksPerBeat);
+        this->_sequenceLengthInTicks = (totalbeats * this->_ticksPerBeat);
+        this->_noteDurationInTicks = 480;
+        // noteLengthInRatios?
         break;
         case mode::QUARTER_TUPLET:
-        this->_ticksPerBeat *= 4;
-        this->_durationInTicks = (this->_ticksPerBeat * this->_beats);
+        this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
         case mode::EIGHTH:
-        this->_ticksPerBeat *= 2;
-        this->_durationInTicks = (totalbeats * this->_ticksPerBeat);
+        this->_sequenceLengthInTicks = (totalbeats * this->_ticksPerBeat / 2);
+        this->_noteDurationInTicks = 240;
         break;
         case mode::EIGHT_TUPLET: 
-        this->_ticksPerBeat *= 2;
-        this->_durationInTicks = (this->_ticksPerBeat * this->_beats);
+        this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
         case mode::SIXTEENTH:
-        this->_durationInTicks = (totalbeats * this->_ticksPerBeat);
+        this->_sequenceLengthInTicks = (totalbeats * this->_ticksPerBeat / 4);
+        this->_noteDurationInTicks = 120;
         break;
         case mode::SIXTEENTH_TUPLET:
-        this->_durationInTicks = (this->_ticksPerBeat * this->_beats);
+        this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
         case mode::THIRTYSECOND:
-        this->_ticksPerBeat /= 2;
-        this->_durationInTicks = (totalbeats * this->_ticksPerBeat);
+        this->_sequenceLengthInTicks = (totalbeats * this->_ticksPerBeat / 8);
+        this->_noteDurationInTicks = 60;
         break;
         case mode::THIRTYSECOND_TUPLET:
-        this->_ticksPerBeat /= 2;
-        this->_durationInTicks = (this->_ticksPerBeat * this->_beats);
+        this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
     }
 
     uint8_t beatz = 0;
+    uint8_t notecount = 0;
     for(int value : inputvec){
-        // this->_beats++;
         beatz++;
-        int beatchop = this->_ticksPerBeat / value; 
         for(int i = 0; i < value; i++){
             Note n;
             n.pitch = 60;
             n.velocity = 127;
             n.velocity_deviation = 0;
-            n.start_time = (float)beatz + (float)value*(1.0f/(float)value); // change start and end times and indices for cross rhythm mode
-            n.duration = (1.0f/(float)value);
-            n.startIndex = (beatz-1)*this->_ticksPerBeat+ beatchop * i ;
-            n.endIndex = n.startIndex + (int)(n.duration * this->_ticksPerBeat);
-            n.endIndex = n.endIndex % this->_durationInTicks;
+            if(m == mode::QUARTER_TUPLET || m == mode::EIGHT_TUPLET || m == mode::SIXTEENTH_TUPLET || m == mode::THIRTYSECOND_TUPLET){
+                int beatchop = this->_ticksPerBeat / value;  /// overwrite ticksperbeat? 
+                n.duration = (1.0f/(float)value);
+                n.startIndex = (beatz-1)*this->_ticksPerBeat+ beatchop * i ;
+                n.endIndex = n.startIndex + (int)(n.duration * this->_ticksPerBeat);
+                n.endIndex = n.endIndex % this->_sequenceLengthInTicks;
+            }else{
+                n.start_time = (float)beatz + (float)(notecount*this->_noteDurationInTicks/480);
+                n.duration = (float)this->_noteDurationInTicks/480.0f;
+                n.startIndex = notecount*this->_noteDurationInTicks;
+                n.endIndex = n.startIndex + this->_noteDurationInTicks;
+                n.endIndex = n.endIndex % this->_sequenceLengthInTicks;
+                notecount++;
+            }
             n.probability = 127;
             n.mute = false;
             n.playing = false;
