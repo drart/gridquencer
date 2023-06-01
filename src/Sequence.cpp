@@ -55,6 +55,7 @@ Sequence::Sequence(std::vector<int> inputvec, mode m){
         this->_sequenceLengthInTicks = (numberOfNotes* this->_noteDurationInTicks);
         break;
         case mode::QUARTER_TUPLET:
+        this->_ticksPerBeat *= 4;
         this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
         case mode::EIGHTH:
@@ -62,6 +63,7 @@ Sequence::Sequence(std::vector<int> inputvec, mode m){
         this->_sequenceLengthInTicks = (numberOfNotes* this->_noteDurationInTicks);
         break;
         case mode::EIGHT_TUPLET: 
+        this->_ticksPerBeat *= 2;
         this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
         case mode::SIXTEENTH:
@@ -76,6 +78,7 @@ Sequence::Sequence(std::vector<int> inputvec, mode m){
         this->_sequenceLengthInTicks = (numberOfNotes* this->_noteDurationInTicks);
         break;
         case mode::THIRTYSECOND_TUPLET:
+        this->_ticksPerBeat /= 2;
         this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
     }

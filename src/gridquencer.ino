@@ -176,18 +176,13 @@ void setup()
     message.push_back(247);
     midicontroller.sendSysEx(message.size(), message.data(), true);
 
-    midicontroller.sendControlChange(41, 127, 1); // 1/16t button
     midicontroller.sendControlChange(87, 127, 1); // new button
     midicontroller.sendControlChange(50, 127, 1); // note button
     midicontroller.sendControlChange(60, 1, 1); // mute button
+    midicontroller.sendControlChange(49, 1, 1); // shift button 
 
-    midicontroller.sendControlChange(43, 7, 1); 
-    midicontroller.sendControlChange(42, 7, 1); 
-    midicontroller.sendControlChange(40, 7, 1); 
-    midicontroller.sendControlChange(39, 7, 1); 
-    midicontroller.sendControlChange(38, 7, 1); 
-    midicontroller.sendControlChange(37, 7, 1); 
-    midicontroller.sendControlChange(36, 7, 1); 
+    changeSubdivisionMode(41);
+    //changeEntryMode();
 
     digitalWrite(3, HIGH);
   }
@@ -211,7 +206,6 @@ void setup()
 void seqfun(){
   sequencer.tick();
     // service notes for tick index
-    // update visual feedback on grid 
   if(sequencer._tickTime % 480 == 0){ // 480 should be taken from the sequencer
     Serial.println("beat");
     midi_module_output.sendClock(); // configure for more standard rates
@@ -355,19 +349,29 @@ void OnControlChange(byte channel, byte control, byte value) {
         midicontroller.sendControlChange(60, 1, 1);
       }
     break;
+    case 36:
+      if(value == 127){ changeSubdivisionMode(control); }
+    break;
+    case 37:
+      if(value == 127){ changeSubdivisionMode(control); }
+    break;
+    case 38:
+      if(value == 127){ changeSubdivisionMode(control); }
+    break;
+    case 39:
+      if(value == 127){ changeSubdivisionMode(control); }
+    break;
     case 40:
-      if(value == 127){
-        subdivisionMode = mode::SIXTEENTH;
-        midicontroller.sendControlChange(40, 127, 1);
-        midicontroller.sendControlChange(41, 7, 1);
-      }
+      if(value == 127){ changeSubdivisionMode(control); }
     break;
     case 41:
-      if(value == 127){
-        subdivisionMode = mode::SIXTEENTH_TUPLET;
-        midicontroller.sendControlChange(41, 127, 1);
-        midicontroller.sendControlChange(40, 7, 1);
-      }
+      if(value == 127){ changeSubdivisionMode(control); }
+    break;
+    case 42:
+      if(value == 127){ changeSubdivisionMode(control); }
+    break;
+    case 43:
+      if(value == 127){ changeSubdivisionMode(control); }
     break;
   }
 }
@@ -449,8 +453,6 @@ void addRegion(Cell start, Cell end){
 
       std::vector<int> regionvec = newRegion->regionToVector(); 
       Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO deallocate memory at appropriate time
-      Serial.println(newSequence->_sequenceLengthInTicks);
-      Serial.println(120 * newSequence->_notes.size());
 
       for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
         GridCell * location = grid.getCell( newRegion->cells.at(i) );
@@ -470,9 +472,30 @@ void addRegion(Cell start, Cell end){
 void changeSubdivisionMode(uint8_t button){
 
   switch(button){
-    case 40:
-      // subdivisionMode = mode::SIXTEENTH_TUPLET;
+    case 43:
+      subdivisionMode = mode::THIRTYSECOND_TUPLET;
     break;
+    case 42: 
+      subdivisionMode = mode::THIRTYSECOND;
+    break;
+    case 41: 
+      subdivisionMode = mode::SIXTEENTH_TUPLET;
+    break;
+    case 40:
+      subdivisionMode = mode::SIXTEENTH;
+    break;
+    case 39:
+      subdivisionMode = mode::EIGHT_TUPLET;
+    break;
+    case 38: 
+      subdivisionMode = mode::EIGHTH;
+    break;
+    case 37:
+      subdivisionMode = mode::QUARTER_TUPLET;
+    break;
+    case 36:
+      subdivisionMode = mode::QUARTER;
+      break;
   }
   for(uint8_t b = 36; b <= 43; b++){
     if(b == button){
