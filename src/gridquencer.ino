@@ -450,6 +450,7 @@ void addRegion(Cell start, Cell end){
       std::vector<int> regionvec = newRegion->regionToVector(); 
       Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO deallocate memory at appropriate time
       Serial.println(newSequence->_sequenceLengthInTicks);
+      Serial.println(120 * newSequence->_notes.size());
 
       for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
         GridCell * location = grid.getCell( newRegion->cells.at(i) );
@@ -463,4 +464,21 @@ void addRegion(Cell start, Cell end){
       Serial.println("Region not added to grid");
       return;
     }
+}
+
+
+void changeSubdivisionMode(uint8_t button){
+
+  switch(button){
+    case 40:
+      // subdivisionMode = mode::SIXTEENTH_TUPLET;
+    break;
+  }
+  for(uint8_t b = 36; b <= 43; b++){
+    if(b == button){
+      midicontroller.sendControlChange(b, 127, 1);
+    }else{
+      midicontroller.sendControlChange(b, 7, 1);
+    }
+  }
 }

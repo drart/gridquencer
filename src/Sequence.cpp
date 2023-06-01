@@ -48,33 +48,32 @@ Sequence::Sequence(std::vector<int> inputvec, mode m){
     this->_beats = inputvec.size();
     this->_ticksPerBeat = 480; // todo clean up
 
-    int totalbeats = std::accumulate(inputvec.begin(), inputvec.end(), 0);
+    uint8_t numberOfNotes = std::accumulate(inputvec.begin(), inputvec.end(), 0);
     switch(m){
         case mode::QUARTER:
-        this->_sequenceLengthInTicks = (totalbeats * this->_ticksPerBeat);
         this->_noteDurationInTicks = 480;
-        // noteLengthInRatios?
+        this->_sequenceLengthInTicks = (numberOfNotes* this->_noteDurationInTicks);
         break;
         case mode::QUARTER_TUPLET:
         this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
         case mode::EIGHTH:
-        this->_sequenceLengthInTicks = (totalbeats * this->_ticksPerBeat / 2);
         this->_noteDurationInTicks = 240;
+        this->_sequenceLengthInTicks = (numberOfNotes* this->_noteDurationInTicks);
         break;
         case mode::EIGHT_TUPLET: 
         this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
         case mode::SIXTEENTH:
-        this->_sequenceLengthInTicks = (totalbeats * this->_ticksPerBeat / 4);
         this->_noteDurationInTicks = 120;
+        this->_sequenceLengthInTicks = (numberOfNotes* this->_noteDurationInTicks);
         break;
         case mode::SIXTEENTH_TUPLET:
         this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
         break;
         case mode::THIRTYSECOND:
-        this->_sequenceLengthInTicks = (totalbeats * this->_ticksPerBeat / 8);
         this->_noteDurationInTicks = 60;
+        this->_sequenceLengthInTicks = (numberOfNotes* this->_noteDurationInTicks);
         break;
         case mode::THIRTYSECOND_TUPLET:
         this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
@@ -112,10 +111,15 @@ Sequence::Sequence(std::vector<int> inputvec, mode m){
     }
 }
 
-
 void Sequence::tick(){
     this->_tickTime++;
-    if(this->_tickTime == this->_beats * this->_ticksPerBeat ){
+    if(this->_tickTime == this->_sequenceLengthInTicks){
         this->_tickTime = 0;
     }
+}
+
+
+
+void changeMode(mode m){
+    /// take mode and then redistibute the durations of the notes
 }
