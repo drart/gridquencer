@@ -30,6 +30,23 @@ bool Grid::checkOverlap(Region * newRegion){
   return true;
 }
 
+Region* Grid::getOverlappingRegion(Region * region){
+  std::vector<Region*> overlappingRegions;
+  Region * theRegion = NULL;
+  
+  for(auto & cell : region->cells){
+    if(this->getCell(cell)->_region != NULL){
+      if(std::find(overlappingRegions.begin(), overlappingRegions.end(), this->getCell(cell)->_region)==overlappingRegions.end()){
+        overlappingRegions.push_back( this->getCell(cell)->_region );
+      }
+    }
+  }
+  if(overlappingRegions.size() == 1){
+    theRegion = overlappingRegions.at(0);
+  }
+  return theRegion;
+}
+
 bool Grid::addRegion(Region * newRegion){
   if( !this->checkOverlap(newRegion) ){
     return false;

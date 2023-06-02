@@ -36,6 +36,7 @@ class Sequence {
         Sequence();
         Sequence(std::vector<int>);
         Sequence(std::vector<int>, mode m);
+        void modify(std::vector<int>);
         void changeMode(mode m); // set the subdivision mode
         void tick();
         bool mute;
@@ -51,6 +52,7 @@ class Sequence {
         // float _length;
         // int _currentStep;
         std::vector<Note> _notes;
+        mode subDivisionMode;
 };
 
 #endif

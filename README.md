@@ -10,7 +10,7 @@ A sequencer for grid interfaces, scattering my attention between javascript, abl
 - https://formulae.brew.sh/formula/teensy_loader_cli
 - Built with Platformio plugin for VS Code - https://platformio.org/install/ide?install=vscode
 
-### Supported Devices
+### Supported Devices (Aspiring)
 
 - Ableton Push 1 (alpha)
 - Ableton Push 2 (conforms to Push 1 MIDI)
@@ -26,7 +26,10 @@ A sequencer for grid interfaces, scattering my attention between javascript, abl
 
 Features to add:
     - region modifications
+    - shifting start points
     - change tempo
+    - LCD screen showing messages for different contexts (notes, sequences)
+    - selecting sequences with the button pads
     - note distribution functions 
     - save to json?
     - load from json?

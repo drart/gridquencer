@@ -14,6 +14,7 @@ Sequence::Sequence(std::vector<int> inputvec){
     this->_beats = inputvec.size();
     this->_ticksPerBeat = 480; // todo clean up
     this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
+    this->subDivisionMode = mode::SIXTEENTH_TUPLET;
 
     uint8_t beatz = 0;
     for(int value : inputvec){
@@ -47,6 +48,7 @@ Sequence::Sequence(std::vector<int> inputvec, mode m){
     this->playing = false;
     this->_beats = inputvec.size();
     this->_ticksPerBeat = 480; // todo clean up
+    this->subDivisionMode = m;
 
     uint8_t numberOfNotes = std::accumulate(inputvec.begin(), inputvec.end(), 0);
     switch(m){
@@ -121,8 +123,10 @@ void Sequence::tick(){
     }
 }
 
+void Sequence::modify(std::vector<int>){
 
+}
 
-void changeMode(mode m){
+void Sequence::changeMode(mode m){
     /// take mode and then redistibute the durations of the notes
 }

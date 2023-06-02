@@ -447,8 +447,8 @@ void lcdClearLine(uint8_t line)
 
 void addRegion(Cell start, Cell end){
     Region * newRegion  = new Region(start, end);
-
     newRegion->colour = 10 + (grid._regions.size() * 4); // TODO will be a problem if a region is deleted 
+
     if ( grid.addRegion( newRegion ) ){
 
       std::vector<int> regionvec = newRegion->regionToVector(); 
@@ -462,9 +462,20 @@ void addRegion(Cell start, Cell end){
       }
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
     }else{
+      Region * overlappingRegion = grid.getOverlappingRegion(newRegion);
+      if(overlappingRegion != NULL){
+        Serial.println("Attempting to modify the region");
+      
+        if(overlappingRegion->modify(newRegion)){
+          Serial.println("success");
+          Sequence * overlappingSequence = grid.getCell(overlappingRegion->cells.at(0))->_sequence;
+          overlappingSequence->modify(overlappingRegion->regionToVector()); // todo implement properly
+        }
+
+      }else{
+        Serial.println("Region not added to grid");
+      }
       delete newRegion;
-      Serial.println("Region not added to grid");
-      return;
     }
 }
 

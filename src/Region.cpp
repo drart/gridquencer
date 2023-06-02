@@ -40,3 +40,16 @@ std::vector<int> Region::regionToVector(){
 uint8_t Region::numberOfSteps(){
   return (int)cells.size();
 }
+
+
+bool Region::modify(Region * region){
+  for( auto & cell : region->cells ){
+    if(true){ // something goes wrong
+      return false;
+    }
+  }
+  for( auto & cell : region->cells ){
+    // modify the cells in this region
+  }
+  return true;
+}

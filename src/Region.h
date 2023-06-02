@@ -10,6 +10,7 @@ class Region{
     Region();
     Region(Cell startPoint, Cell endPoint);
     std::vector<int> regionToVector(); // return [3,3,3] for a 3x3 grid
+    bool modify(Region * region);
     uint8_t numberOfSteps();
     std::vector<Cell> cells;
     // std::vector<std::vector<Cell>> rows;
