@@ -98,3 +98,8 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
 */
   return false;
 }
+
+
+void Grid::updateGrid(Region * modifiedRegion, Sequence * modifiedSequence){
+
+}

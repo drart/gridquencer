@@ -10,12 +10,14 @@ Region::Region(Cell firstPoint, Cell secondPoint){
   _beats = 0;
   
     for(int i = _bottomLeft._y; i <= _topLeft._y; i++){
+      //std::vector<Cell> therow; // work on this. it should solve the issue. 
       for(int j = _bottomLeft._x; j <= _bottomRight._x; j++){
         Cell newCell = Cell(j,i);
         cells.push_back( newCell );
         //rows.at(beats).push_back(newCell); // causes a crash!
       }
       _beats++;
+      // rows.push_back(therow);
     }
 
 }
@@ -43,13 +45,22 @@ uint8_t Region::numberOfSteps(){
 
 
 bool Region::modify(Region * region){
+  Serial.println(region->cells.at(0)._x);
+  Serial.println(this->_bottomLeft._x);
+  if(region->cells.at(0)._x != this->_bottomLeft._x){
+    return false;
+  }
+
+  uint8_t cellcolumn = region->cells.at(0)._x;
+  Serial.println(cellcolumn);
+  this->cells.erase( std::remove_if(this->cells.begin(), this->cells.end(), [&](Cell c){return c._x == cellcolumn;}), this->cells.end());
   for( auto & cell : region->cells ){
-    if(true){ // something goes wrong
-      return false;
+    if(cell._y != cellcolumn){
+      cellcolumn = cell._y;
+      Serial.println(cellcolumn);
+      this->cells.erase( std::remove_if(this->cells.begin(), this->cells.end(), [&](Cell c){return c._y == cellcolumn;}), this->cells.end());
     }
   }
-  for( auto & cell : region->cells ){
-    // modify the cells in this region
-  }
+  this->cells.insert(this->cells.end(), region->cells.begin(), region->cells.end());
   return true;
 }

@@ -465,11 +465,14 @@ void addRegion(Cell start, Cell end){
       Region * overlappingRegion = grid.getOverlappingRegion(newRegion);
       if(overlappingRegion != NULL){
         Serial.println("Attempting to modify the region");
+        Serial.println(overlappingRegion->cells.size());
       
         if(overlappingRegion->modify(newRegion)){
           Serial.println("success");
           Sequence * overlappingSequence = grid.getCell(overlappingRegion->cells.at(0))->_sequence;
           overlappingSequence->modify(overlappingRegion->regionToVector()); // todo implement properly
+          Serial.println(overlappingRegion->cells.size());
+          grid.updateGrid(overlappingRegion, overlappingSequence);// todo implement
         }
 
       }else{
@@ -478,7 +481,6 @@ void addRegion(Cell start, Cell end){
       delete newRegion;
     }
 }
-
 
 void changeSubdivisionMode(uint8_t button){
 
