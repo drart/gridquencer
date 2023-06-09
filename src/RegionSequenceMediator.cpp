@@ -1,5 +1,7 @@
 #include "RegionSequenceMediator.h"
 
+#include "Arduino.h"  
+
 RegionSequenceMediator::RegionSequenceMediator(){
 }
 
@@ -34,7 +36,7 @@ Sequence * RegionSequenceMediator::regionToSequence(Region * region, mode subdiv
     gc._region = region;
     gc._sequence = newSequence;
 
-    this->cellNotes.at(gc.cell->_y*8 + gc.cell->_x) = gc;
+    this->cellNotes[(gc.cell->_y*8) + gc.cell->_x] = gc;
   }
 
   return newSequence;
@@ -44,4 +46,15 @@ void RegionSequenceMediator::modifySequence(Region * region){
   // get the sequence associated with this region
   // figure out what changed
   // modify
+  Sequence * seq;
+  for(auto & cell : region->cells){
+    if(this->cellNotes.find((cell._y*8) + cell._x) != this->cellNotes.end()){
+      GridCell * gc = &this->cellNotes[(cell._y*8) + cell._x];
+      if(gc->_region == region){
+        seq = gc->_sequence;
+        break;
+      }
+    }
+  }
+
 }

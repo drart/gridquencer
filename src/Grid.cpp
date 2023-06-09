@@ -1,5 +1,7 @@
 #include "Grid.h"
 
+#include "Arduino.h"
+
 Grid::Grid(){
   this->_allowOverlap = false;
   this->_columns = 8;
@@ -7,16 +9,19 @@ Grid::Grid(){
 }
 
 Cell * Grid::getCell(Cell cell){
-  for(auto & c : this->_cells){
-    if( *c == cell ){
-      return c;
+
+  for(auto region : this->_regions){
+    for( auto rc : region->cells){
+      if(rc._x == cell._x && rc._y == cell._y){
+        return &rc;
+      }
     }
   }
   return NULL;
 }
 
 bool Grid::checkOverlap(Region * newRegion){ 
-  for(auto & cell : newRegion->cells){
+  for(auto cell : newRegion->cells){
     if(this->getCell(cell) != NULL){
       return false;
     }

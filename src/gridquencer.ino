@@ -256,10 +256,6 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
   }
   if(padsDown.size() == 1){
     grid._selectedCell = grid.getCell(padsDown.at(0));
-    // if(grid._selectedCell->note != NULL){
-      // Serial.println(grid._selectedCell->note->pitch);
-      // Serial.println(grid._selectedCell->note->velocity);
-    // }
 
     // switch(regionMode){
     //   case entryMode::MUTE:
@@ -285,7 +281,8 @@ void OnNoteOff(byte channel, byte note, byte velocity) {
 
   if(padsDown.size() == 1){
     if(regionMode == entryMode::NEW){
-      addRegion(padsDown[0], padsDown[0]);
+      // addRegion(padsDown[0], padsDown[0]);
+      addRegion(padsDown[0]);
     }
   }
   if(!padsDown.empty()){ // can I remove this check? 
@@ -419,20 +416,6 @@ void sendGrid( uint8_t x, uint8_t y, uint8_t col){
 }
 
 void updateGridDisplay() {
-  /*
-  for (GridCell & cell : grid.grid) {
-    if (cell.note != NULL) {
-      if (cell.note->playing == true) {
-        sendGrid(cell.cell._x, cell.cell._y, PUSH2COLOURS::WHITE);
-      } else {
-        //Serial.println(cell._region->colour);
-        uint8_t rc = uint8_t(cell._region->colour);
-        sendGrid(cell.cell._x, cell.cell._y, rc);
-      }
-    } else {
-      sendGrid(cell.cell._x, cell.cell._y, PUSH2COLOURS::OFF);
-    }
-  }*/
   for(uint8_t x = 0; x < 8; x++){// fix for grid size
     for(uint8_t y = 0; y < 8; y++){
       if(mediator.cellNotes.find((y*8)+x) == mediator.cellNotes.end()){
@@ -469,31 +452,16 @@ void addRegion(Cell start, Cell end){
     newRegion->colour = 10 + (grid._regions.size() * 4); // TODO will be a problem if a region is deleted 
 
     if ( grid.addRegion( newRegion ) ){
-
-      // std::vector<uint8_t> regionvec = newRegion->regionToVector(); 
       Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
-      // Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO deallocate memory at appropriate time
-
-      // for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
-        // GridCell * location = grid.getCell( newRegion->cells.at(i) );
-        // location->note = &newSequence->_notes.at(i);
-        // location->note->pitch = random(127);
-        // location->_sequence = newSequence;
-      // }
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
     }else{
       Region * overlappingRegion = grid.getOverlappingRegion(newRegion);
       if(overlappingRegion != NULL){
         Serial.println("Attempting to modify the region");
-        Serial.println(overlappingRegion->cells.size());
       
         if(overlappingRegion->modify(newRegion)){
           Serial.println("success");
           mediator.modifySequence(overlappingRegion);
-          // Sequence * overlappingSequence = grid.getCell(overlappingRegion->cells.at(0))->_sequence;
-          // overlappingSequence->modify(overlappingRegion->regionToVector()); // todo implement properly
-          // Serial.println(overlappingRegion->cells.size());
-          // grid.updateGrid(overlappingRegion, overlappingSequence);// todo implement
         }
 
       }else{
@@ -501,6 +469,17 @@ void addRegion(Cell start, Cell end){
       }
       delete newRegion;
     }
+}
+
+void addRegion(Cell startEnd){
+  Region * newRegion = new Region(startEnd, startEnd); 
+  newRegion->colour = 100;
+  if(grid.addRegion(newRegion)){
+      Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
+      sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
+  }else{
+    delete newRegion;
+  }
 }
 
 void changeSubdivisionMode(uint8_t button){

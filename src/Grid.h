@@ -2,6 +2,7 @@
 #define G_GRID
 
 #include <vector>
+#include <map>
 #include <stddef.h>
 
 #include "Cell.h"
