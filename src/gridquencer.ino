@@ -11,6 +11,7 @@
 
 #include "Grid.h"
 #include "Sequencer.h"
+#include "RegionSequenceMediator.h"
 
 IntervalTimer myTimer;
 
@@ -30,6 +31,7 @@ Sequencer sequencer(60.0f, 480);  // bpm, ticks per beat. 480 allows for good re
 
 std::vector<Cell> padsDown;
 Grid grid;
+RegionSequenceMediator mediator;
 
 mode subdivisionMode = mode::SIXTEENTH_TUPLET; 
 enum class entryMode{
@@ -258,18 +260,19 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
       // Serial.println(grid._selectedCell->note->pitch);
       // Serial.println(grid._selectedCell->note->velocity);
     // }
-    switch(regionMode){
-      case entryMode::MUTE:
-        if(grid._selectedCell->note->mute == true){
-          grid._selectedCell->note->mute = false;
-        }else{
-          grid._selectedCell->note->mute = true;
-        }
-        Serial.println(grid._selectedCell->note->mute);
-      break;
-      case entryMode::DELETE:
-      break;
-    }
+
+    // switch(regionMode){
+    //   case entryMode::MUTE:
+    //     if(grid._selectedCell->note->mute == true){
+    //       grid._selectedCell->note->mute = false;
+    //     }else{
+    //       grid._selectedCell->note->mute = true;
+    //     }
+    //     Serial.println(grid._selectedCell->note->mute);
+    //   break;
+    //   case entryMode::DELETE:
+    //   break;
+    // }
   }
 }
 
@@ -306,13 +309,13 @@ void OnControlChange(byte channel, byte control, byte value) {
 
   switch(control){
     case 71: // knob 1
-      if(grid._selectedCell->note != NULL){
-        float thenote = grid._selectedCell->note->pitch;
-        thenote += float(knobvaldiff);
-        thenote = constrain(thenote, 0, 127);
-        grid._selectedCell->note->pitch = thenote;
-        Serial.println(grid._selectedCell->note->pitch);
-      }
+      // if(grid._selectedCell->note != NULL){
+        // float thenote = grid._selectedCell->note->pitch;
+        // thenote += float(knobvaldiff);
+        // thenote = constrain(thenote, 0, 127);
+        // grid._selectedCell->note->pitch = thenote;
+        // Serial.println(grid._selectedCell->note->pitch);
+      // }
     break;
     case 72:
     break;
@@ -416,6 +419,7 @@ void sendGrid( uint8_t x, uint8_t y, uint8_t col){
 }
 
 void updateGridDisplay() {
+  /*
   for (GridCell & cell : grid.grid) {
     if (cell.note != NULL) {
       if (cell.note->playing == true) {
@@ -427,6 +431,21 @@ void updateGridDisplay() {
       }
     } else {
       sendGrid(cell.cell._x, cell.cell._y, PUSH2COLOURS::OFF);
+    }
+  }*/
+  for(uint8_t x = 0; x < 8; x++){// fix for grid size
+    for(uint8_t y = 0; y < 8; y++){
+      if(mediator.cellNotes.find((y*8)+x) == mediator.cellNotes.end()){
+        sendGrid(x, y, PUSH2COLOURS::OFF);
+        continue;
+      }
+
+      GridCell * gc = &mediator.cellNotes[(y*8)+x];
+      if(gc->note->playing == true){
+        sendGrid(x, y, PUSH2COLOURS::WHITE);
+      }else{
+        sendGrid(x, y, gc->_region->colour);
+      }
     }
   }
 }
@@ -451,15 +470,16 @@ void addRegion(Cell start, Cell end){
 
     if ( grid.addRegion( newRegion ) ){
 
-      std::vector<int> regionvec = newRegion->regionToVector(); 
-      Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO deallocate memory at appropriate time
+      // std::vector<uint8_t> regionvec = newRegion->regionToVector(); 
+      Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
+      // Sequence * newSequence = new Sequence(regionvec, subdivisionMode); // TODO deallocate memory at appropriate time
 
-      for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
-        GridCell * location = grid.getCell( newRegion->cells.at(i) );
-        location->note = &newSequence->_notes.at(i);
-        location->note->pitch = random(127);
-        location->_sequence = newSequence;
-      }
+      // for(uint8_t i = 0; i < newRegion->cells.size(); i++){ // todo move this into a function
+        // GridCell * location = grid.getCell( newRegion->cells.at(i) );
+        // location->note = &newSequence->_notes.at(i);
+        // location->note->pitch = random(127);
+        // location->_sequence = newSequence;
+      // }
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
     }else{
       Region * overlappingRegion = grid.getOverlappingRegion(newRegion);
@@ -469,10 +489,11 @@ void addRegion(Cell start, Cell end){
       
         if(overlappingRegion->modify(newRegion)){
           Serial.println("success");
-          Sequence * overlappingSequence = grid.getCell(overlappingRegion->cells.at(0))->_sequence;
-          overlappingSequence->modify(overlappingRegion->regionToVector()); // todo implement properly
-          Serial.println(overlappingRegion->cells.size());
-          grid.updateGrid(overlappingRegion, overlappingSequence);// todo implement
+          mediator.modifySequence(overlappingRegion);
+          // Sequence * overlappingSequence = grid.getCell(overlappingRegion->cells.at(0))->_sequence;
+          // overlappingSequence->modify(overlappingRegion->regionToVector()); // todo implement properly
+          // Serial.println(overlappingRegion->cells.size());
+          // grid.updateGrid(overlappingRegion, overlappingSequence);// todo implement
         }
 
       }else{

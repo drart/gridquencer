@@ -47,6 +47,7 @@ uint8_t Region::numberOfSteps(){
 bool Region::modify(Region * region){
   Serial.println(region->cells.at(0)._x);
   Serial.println(this->_bottomLeft._x);
+  // if the origin of the new region is on the column as the origin of the region then it is on the beat
   if(region->cells.at(0)._x != this->_bottomLeft._x){
     return false;
   }

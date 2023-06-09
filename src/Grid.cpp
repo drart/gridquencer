@@ -1,29 +1,23 @@
 #include "Grid.h"
-#include <vector>
 
 Grid::Grid(){
   this->_allowOverlap = false;
   this->_columns = 8;
   this->_rows = 8;
+}
 
-  // todo grid.reserve()? 
-  for( char y = 0; y < _rows; y++){
-    for( char x = 0; x < _columns; x++){
-      GridCell gridcell;
-      gridcell.cell._x = x;
-      gridcell.cell._y = y;
-      grid.push_back( gridcell );
-    } 
+Cell * Grid::getCell(Cell cell){
+  for(auto & c : this->_cells){
+    if( *c == cell ){
+      return c;
+    }
   }
+  return NULL;
 }
 
-GridCell* Grid::getCell(Cell cell){
-   return &this->grid[(cell._y*8) + cell._x];
-}
-
-bool Grid::checkOverlap(Region * newRegion){
+bool Grid::checkOverlap(Region * newRegion){ 
   for(auto & cell : newRegion->cells){
-    if(!this->grid.at(cell._y*8 + cell._x).memberOf.empty() ){
+    if(this->getCell(cell) != NULL){
       return false;
     }
   }
@@ -32,19 +26,23 @@ bool Grid::checkOverlap(Region * newRegion){
 
 Region* Grid::getOverlappingRegion(Region * region){
   std::vector<Region*> overlappingRegions;
-  Region * theRegion = NULL;
   
-  for(auto & cell : region->cells){
-    if(this->getCell(cell)->_region != NULL){
-      if(std::find(overlappingRegions.begin(), overlappingRegions.end(), this->getCell(cell)->_region)==overlappingRegions.end()){
-        overlappingRegions.push_back( this->getCell(cell)->_region );
+  // TODO FIX
+  for(auto r : this->_regions){
+    for(auto  c : region->cells){
+      for(auto cell : region->cells){
+        if(c == cell){
+          overlappingRegions.push_back(r);
+          continue; // this doesn't escape to the level I'd like
+        }
       }
     }
   }
+
   if(overlappingRegions.size() == 1){
-    theRegion = overlappingRegions.at(0);
+   return overlappingRegions.at(0);
   }
-  return theRegion;
+  return NULL;
 }
 
 bool Grid::addRegion(Region * newRegion){
@@ -52,10 +50,10 @@ bool Grid::addRegion(Region * newRegion){
     return false;
   }
 
-  for(auto &cell: newRegion->cells ){
-   this->grid.at(cell._y*8 + cell._x)._region = newRegion;
-   this->grid.at(cell._y*8 + cell._x).memberOf.push_back(*newRegion);
+  for(auto cell: newRegion->cells ){
+    this->_cells.push_back( &cell );
   }
+
   this->_regions.push_back(newRegion);
   this->_selectedRegion = newRegion;
   return true;
@@ -97,9 +95,4 @@ bool Grid::requestMoveRegion(Region * _region, int dx, int dy){
   return true;
 */
   return false;
-}
-
-
-void Grid::updateGrid(Region * modifiedRegion, Sequence * modifiedSequence){
-
 }

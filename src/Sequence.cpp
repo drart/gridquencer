@@ -6,7 +6,7 @@ Sequence::Sequence(){
     // this->_tickTime = 0;
 };
 
-Sequence::Sequence(std::vector<int> inputvec){
+Sequence::Sequence(std::vector<uint8_t> inputvec){
     this->loop = true;
     this->mute = false;
     this->_tickTime = 0;
@@ -15,6 +15,7 @@ Sequence::Sequence(std::vector<int> inputvec){
     this->_ticksPerBeat = 480; // todo clean up
     this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
     this->subDivisionMode = mode::SIXTEENTH_TUPLET;
+    this->pattern = inputvec;
 
     uint8_t beatz = 0;
     for(int value : inputvec){
@@ -40,7 +41,7 @@ Sequence::Sequence(std::vector<int> inputvec){
 }
 
 
-Sequence::Sequence(std::vector<int> inputvec, mode m){
+Sequence::Sequence(std::vector<uint8_t> inputvec, mode m){
 
     this->loop = true;
     this->mute = false;
@@ -49,6 +50,7 @@ Sequence::Sequence(std::vector<int> inputvec, mode m){
     this->_beats = inputvec.size();
     this->_ticksPerBeat = 480; // todo clean up
     this->subDivisionMode = m;
+    this->pattern = inputvec;
 
     uint8_t numberOfNotes = std::accumulate(inputvec.begin(), inputvec.end(), 0);
     switch(m){
@@ -123,8 +125,13 @@ void Sequence::tick(){
     }
 }
 
-void Sequence::modify(std::vector<int>){
+void Sequence::modify(std::vector<uint8_t> newbeat){
+    for(uint8_t i = 0; i < newbeat.size(); i++){
+        if(this->pattern.at(i) == newbeat.at(i)){
 
+        }
+    }
+    this->pattern = newbeat;
 }
 
 void Sequence::changeMode(mode m){

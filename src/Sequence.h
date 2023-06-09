@@ -34,9 +34,9 @@ enum class mode {
 class Sequence {
     public: 
         Sequence();
-        Sequence(std::vector<int>);
-        Sequence(std::vector<int>, mode m);
-        void modify(std::vector<int>);
+        Sequence(std::vector<uint8_t>);
+        Sequence(std::vector<uint8_t>, mode m);
+        void modify(std::vector<uint8_t>);
         void changeMode(mode m); // set the subdivision mode
         void tick();
         bool mute;
@@ -53,6 +53,7 @@ class Sequence {
         // int _currentStep;
         std::vector<Note> _notes;
         mode subDivisionMode;
+        std::vector<uint8_t> pattern;
 };
 
 #endif
