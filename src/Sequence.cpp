@@ -137,3 +137,6 @@ void Sequence::modify(std::vector<uint8_t> newbeat){
 void Sequence::changeMode(mode m){
     /// take mode and then redistibute the durations of the notes
 }
+
+
+// create some methods that populate the notes in different ways

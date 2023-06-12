@@ -65,3 +65,30 @@ bool Region::modify(Region * region){
   this->cells.insert(this->cells.end(), region->cells.begin(), region->cells.end());
   return true;
 }
+
+
+bool Region::containsCell(Cell * c){
+  for(auto cell : this->cells){
+    if(c->_x == cell._x && c->_y == cell._y){
+      return true;
+    }
+  }
+  return false;
+}
+
+
+bool Region::doesOverlap(Region * r){
+  for(auto c : r->cells){
+    if(this->containsCell(&c)){
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Region::leftSideAligned(Region * r){
+  if(r->_bottomLeft._x == this->_bottomLeft._x){
+    return true;
+  }
+  return false;
+}

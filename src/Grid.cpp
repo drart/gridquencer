@@ -8,6 +8,18 @@ Grid::Grid(){
   this->_rows = 8;
 }
 
+Grid::Grid(uint8_t x, uint8_t y){
+  this->_rows = x;
+  this->_columns = y;
+  this->_allowOverlap = false;
+
+  // TODO is this a better implementation? 
+  uint8_t totalcells = x * y;
+  for(uint8_t i = 0; i < totalcells; i++){
+    this->_cellMap[i] = NULL;
+  }
+}
+
 Cell * Grid::getCell(Cell cell){
 
   for(auto region : this->_regions){
@@ -20,27 +32,22 @@ Cell * Grid::getCell(Cell cell){
   return NULL;
 }
 
-bool Grid::checkOverlap(Region * newRegion){ 
-  for(auto cell : newRegion->cells){
-    if(this->getCell(cell) != NULL){
-      return false;
+bool Grid::checkOverlap(Region * newRegion){ // todo better name
+  for(auto r : this->_regions){
+    if(r->doesOverlap(newRegion)){
+      Serial.println("checking a region");
+      return true;
     }
   }
-  return true;
+  return false;
 }
 
-Region* Grid::getOverlappingRegion(Region * region){
+Region * Grid::getOverlappingRegion(Region * region){
   std::vector<Region*> overlappingRegions;
   
-  // TODO FIX
-  for(auto r : this->_regions){
-    for(auto  c : region->cells){
-      for(auto cell : region->cells){
-        if(c == cell){
-          overlappingRegions.push_back(r);
-          continue; // this doesn't escape to the level I'd like
-        }
-      }
+  for(auto r : this->_regions){ // TODO FIX
+    if(r->doesOverlap(region)){
+      overlappingRegions.push_back(r);
     }
   }
 
@@ -51,7 +58,7 @@ Region* Grid::getOverlappingRegion(Region * region){
 }
 
 bool Grid::addRegion(Region * newRegion){
-  if( !this->checkOverlap(newRegion) ){
+  if( this->checkOverlap(newRegion) ){
     return false;
   }
 

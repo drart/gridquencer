@@ -36,6 +36,7 @@ class Sequence {
         Sequence();
         Sequence(std::vector<uint8_t>);
         Sequence(std::vector<uint8_t>, mode m);
+        // Sequence(sd::vector<uint8_t>, mode, std::vector<uint8_t> notecycle);
         void modify(std::vector<uint8_t>);
         void changeMode(mode m); // set the subdivision mode
         void tick();

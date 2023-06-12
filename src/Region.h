@@ -14,6 +14,9 @@ class Region{
     bool modify(Region * region);
     uint8_t numberOfSteps();
     std::vector<Cell> cells;
+    bool containsCell(Cell * c);
+    bool doesOverlap (Region * r);
+    bool leftSideAligned(Region * r);
     // std::vector<std::vector<Cell>> rows;
   // private:
     uint8_t _beats;

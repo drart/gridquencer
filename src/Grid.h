@@ -11,6 +11,7 @@
 class Grid {
   public: 
     Grid();
+    Grid(uint8_t, uint8_t);
     bool addRegion(Region * newRegion);
     bool requestMoveRegion(Region * region, int dx, int dy);
     bool checkOverlap(Region * newRegion);
@@ -18,6 +19,7 @@ class Grid {
     Cell * getCell(Cell cell);
     std::vector<Region*> _regions;
     std::vector<Cell*> _cells;
+    std::map<uint8_t, Cell*> _cellMap;
     Cell * _selectedCell;
     Region * _selectedRegion;
   // private: 
