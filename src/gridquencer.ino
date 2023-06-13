@@ -257,6 +257,7 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
   if(padsDown.size() == 1){
     grid._selectedCell = grid.getCell(padsDown.at(0));
 
+    // TODO Re-enable this
     // switch(regionMode){
     //   case entryMode::MUTE:
     //     if(grid._selectedCell->note->mute == true){
@@ -454,6 +455,9 @@ void addRegion(Cell start, Cell end){
     if ( grid.addRegion( newRegion ) ){
       Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
+      for(auto s : newRegion->regionToVector() ){
+        Serial.println(s);
+      }
     }else{
       Region * overlappingRegion = grid.getOverlappingRegion(newRegion);
       if(overlappingRegion != NULL){
@@ -461,6 +465,7 @@ void addRegion(Cell start, Cell end){
       
         if(overlappingRegion->modify(newRegion)){
           Serial.println("success");
+          printRegion(overlappingRegion);
           mediator.modifySequence(overlappingRegion);
         }
 
@@ -516,5 +521,19 @@ void changeSubdivisionMode(uint8_t button){
     }else{
       midicontroller.sendControlChange(b, 7, 1);
     }
+  }
+}
+
+void printRegion(Region * r){
+  for(auto c : r->cells){
+    Serial.print(c._x);
+    Serial.print(",");
+    Serial.println(c._y);
+  }
+}
+
+void printRegionVector(Region * r){
+  for(auto c : r->regionToVector()){
+    Serial.println(c);
   }
 }

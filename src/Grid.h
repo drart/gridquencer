@@ -14,7 +14,7 @@ class Grid {
     Grid(uint8_t, uint8_t);
     bool addRegion(Region * newRegion);
     bool requestMoveRegion(Region * region, int dx, int dy);
-    bool checkOverlap(Region * newRegion);
+    bool doesOverlap(Region * newRegion);
     Region * getOverlappingRegion(Region * region);
     Cell * getCell(Cell cell);
     std::vector<Region*> _regions;

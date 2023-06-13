@@ -32,7 +32,7 @@ Cell * Grid::getCell(Cell cell){
   return NULL;
 }
 
-bool Grid::checkOverlap(Region * newRegion){ // todo better name
+bool Grid::doesOverlap(Region * newRegion){ 
   for(auto r : this->_regions){
     if(r->doesOverlap(newRegion)){
       Serial.println("checking a region");
@@ -43,9 +43,9 @@ bool Grid::checkOverlap(Region * newRegion){ // todo better name
 }
 
 Region * Grid::getOverlappingRegion(Region * region){
-  std::vector<Region*> overlappingRegions;
+  std::vector<Region *> overlappingRegions;
   
-  for(auto r : this->_regions){ // TODO FIX
+  for(auto r : this->_regions){ 
     if(r->doesOverlap(region)){
       overlappingRegions.push_back(r);
     }
@@ -58,7 +58,7 @@ Region * Grid::getOverlappingRegion(Region * region){
 }
 
 bool Grid::addRegion(Region * newRegion){
-  if( this->checkOverlap(newRegion) ){
+  if( this->doesOverlap(newRegion) ){
     return false;
   }
 

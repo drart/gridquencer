@@ -2,29 +2,29 @@
 
 Region::Region(Cell firstPoint, Cell secondPoint){
 
-  _bottomLeft = Cell(std::min(firstPoint._x,secondPoint._x), std::min(firstPoint._y,secondPoint._y));
-  _topRight = Cell(std::max(firstPoint._x,secondPoint._x), std::max(firstPoint._y,secondPoint._y));
-  _topLeft = Cell(std::min(firstPoint._x,secondPoint._x), std::max(firstPoint._y,secondPoint._y));
-  _bottomRight = Cell(std::max(firstPoint._x,secondPoint._x), std::min(firstPoint._y,secondPoint._y));
+  this->_bottomLeft = Cell(std::min(firstPoint._x,secondPoint._x), std::min(firstPoint._y,secondPoint._y));
+  this->_topRight = Cell(std::max(firstPoint._x,secondPoint._x), std::max(firstPoint._y,secondPoint._y));
+  this->_topLeft = Cell(std::min(firstPoint._x,secondPoint._x), std::max(firstPoint._y,secondPoint._y));
+  this->_bottomRight = Cell(std::max(firstPoint._x,secondPoint._x), std::min(firstPoint._y,secondPoint._y));
 
-  _beats = 0;
+  this->_beats = 0;
   
-    for(int i = _bottomLeft._y; i <= _topLeft._y; i++){
+    for(uint8_t i = _bottomLeft._y; i <= _topLeft._y; i++){
       //std::vector<Cell> therow; // work on this. it should solve the issue. 
-      for(int j = _bottomLeft._x; j <= _bottomRight._x; j++){
+      for(uint8_t j = _bottomLeft._x; j <= _bottomRight._x; j++){
         Cell newCell = Cell(j,i);
-        cells.push_back( newCell );
+        this->cells.push_back( newCell );
         //rows.at(beats).push_back(newCell); // causes a crash!
       }
-      _beats++;
+      this->_beats++;
       // rows.push_back(therow);
     }
 
 }
 
-std::vector<int> Region::regionToVector(){
-  std::vector<int> thearray;
-  int s = 1;
+std::vector<uint8_t> Region::regionToVector(){
+  std::vector<uint8_t> thearray;
+  uint8_t s = 1;
   if (cells.size() != 1) {
     for (int i = 1; i < (int)cells.size(); i++) {
       if((int)cells.at(i-1)._y != (int)cells.at(i)._y){
@@ -40,32 +40,26 @@ std::vector<int> Region::regionToVector(){
 }
 
 uint8_t Region::numberOfSteps(){
-  return (int)cells.size();
+  return (uint8_t)cells.size();
 }
 
-
 bool Region::modify(Region * region){
-  Serial.println(region->cells.at(0)._x);
-  Serial.println(this->_bottomLeft._x);
-  // if the origin of the new region is on the column as the origin of the region then it is on the beat
-  if(region->cells.at(0)._x != this->_bottomLeft._x){
+  if( !this->leftSideAligned(region) ){ //TODO TEST
     return false;
   }
 
-  uint8_t cellcolumn = region->cells.at(0)._x;
-  Serial.println(cellcolumn);
-  this->cells.erase( std::remove_if(this->cells.begin(), this->cells.end(), [&](Cell c){return c._x == cellcolumn;}), this->cells.end());
+  uint8_t cellrow = region->cells.at(0)._y;
+  std::vector<Cell>::iterator insertPoint = std::find_if(this->cells.begin(), this->cells.end(), [&](Cell c){return c._y == cellrow;});
+  this->cells.erase( std::remove_if(this->cells.begin(), this->cells.end(), [&](Cell c){return c._y == cellrow;}), this->cells.end());
   for( auto & cell : region->cells ){
-    if(cell._y != cellcolumn){
-      cellcolumn = cell._y;
-      Serial.println(cellcolumn);
-      this->cells.erase( std::remove_if(this->cells.begin(), this->cells.end(), [&](Cell c){return c._y == cellcolumn;}), this->cells.end());
+    if(cell._y != cellrow){
+      cellrow = cell._y;
+      this->cells.erase( std::remove_if(this->cells.begin(), this->cells.end(), [&](Cell c){return c._y == cellrow;}), this->cells.end());
     }
   }
-  this->cells.insert(this->cells.end(), region->cells.begin(), region->cells.end());
+  this->cells.insert(insertPoint, region->cells.begin(), region->cells.end()); 
   return true;
 }
-
 
 bool Region::containsCell(Cell * c){
   for(auto cell : this->cells){
@@ -75,7 +69,6 @@ bool Region::containsCell(Cell * c){
   }
   return false;
 }
-
 
 bool Region::doesOverlap(Region * r){
   for(auto c : r->cells){
