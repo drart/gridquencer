@@ -16,6 +16,7 @@ Sequence::Sequence(std::vector<uint8_t> inputvec){
     this->_sequenceLengthInTicks = (this->_ticksPerBeat * this->_beats);
     this->subDivisionMode = mode::SIXTEENTH_TUPLET;
     this->pattern = inputvec;
+    this->midiChannel = 10;
 
     uint8_t beatz = 0;
     for(int value : inputvec){
@@ -51,9 +52,10 @@ Sequence::Sequence(std::vector<uint8_t> inputvec, mode m){
     this->_ticksPerBeat = 480; // todo clean up
     this->subDivisionMode = m;
     this->pattern = inputvec;
+    this->midiChannel = 10;
 
     uint8_t numberOfNotes = std::accumulate(inputvec.begin(), inputvec.end(), 0);
-    switch(m){
+    switch(this->subDivisionMode){
         case mode::QUARTER:
         this->_noteDurationInTicks = 480;
         this->_sequenceLengthInTicks = (numberOfNotes* this->_noteDurationInTicks);
@@ -99,8 +101,9 @@ Sequence::Sequence(std::vector<uint8_t> inputvec, mode m){
             if(m == mode::QUARTER_TUPLET || m == mode::EIGHT_TUPLET || m == mode::SIXTEENTH_TUPLET || m == mode::THIRTYSECOND_TUPLET){
                 int beatchop = this->_ticksPerBeat / value;  /// overwrite ticksperbeat? 
                 n.duration = (1.0f/(float)value);
+                n.start_time = (float)beatz + (i * n.duration);
                 n.startIndex = (beatz-1)*this->_ticksPerBeat+ beatchop * i ;
-                n.endIndex = n.startIndex + (int)(n.duration * this->_ticksPerBeat);
+                n.endIndex = n.startIndex + (uint16_t)(n.duration * this->_ticksPerBeat);
                 n.endIndex = n.endIndex % this->_sequenceLengthInTicks;
             }else{
                 n.start_time = (float)beatz + (float)(notecount*this->_noteDurationInTicks/480);
@@ -125,18 +128,79 @@ void Sequence::tick(){
     }
 }
 
-void Sequence::modify(std::vector<uint8_t> newbeat){
-    for(uint8_t i = 0; i < newbeat.size(); i++){
-        if(this->pattern.at(i) == newbeat.at(i)){
-
+void Sequence::modify(std::vector<uint8_t> newPattern){ 
+    for(uint8_t i = 0; i < newPattern.size(); i++){
+        if(this->pattern.at(i) != newPattern.at(i)){
+            uint8_t b = i + 1;
+            Serial.println("beat modification needed");
+            std::vector<Note>::iterator insertPoint = std::find_if(this->_notes.begin(), this->_notes.end(), [&](Note n){return (uint8_t)floor(n.start_time) == b;});
+            
+            if(this->pattern.at(i) < newPattern.at(i)){
+                std::vector<Note> newNotes;
+                for(uint8_t j = 0; j < this->pattern.at(i); j++){
+                    this->modifyNote(&(*insertPoint), b, j, newPattern.at(i)); 
+                    std::advance(insertPoint, 1);
+                }
+                for(uint8_t k = this->pattern.at(i); k < newPattern.at(i); k++ ){
+                    Serial.println("making new notes");
+                    Note n = this->makeNote(b, k, newPattern.at(i));
+                    newNotes.push_back(n);
+                }
+                this->_notes.insert(insertPoint, newNotes.begin(), newNotes.end());
+            }else{ // TODO UNTESTED
+                for(uint8_t j = 0; j < newPattern.at(i); j++){
+                    this->modifyNote(&(*insertPoint), b, j, newPattern.at(i)); // TODO FIX
+                    std::advance(insertPoint, 1); 
+                }
+                this->_notes.erase(std::remove_if(insertPoint,this->_notes.end(), [&](Note n){return (uint8_t)floor(n.start_time) == b;}));
+            }
         }
     }
-    this->pattern = newbeat;
+    this->pattern = newPattern;
 }
 
-void Sequence::changeMode(mode m){
-    /// take mode and then redistibute the durations of the notes
+void Sequence::setMode(mode m){
 }
 
+Note Sequence::makeNote(uint8_t b, uint8_t n, uint8_t k) {
+    Note note;
+    note.pitch = 60;
+    note.velocity = 127;
+    note.velocity_deviation = 0;
+    if (this->subDivisionMode == mode::QUARTER_TUPLET || this->subDivisionMode == mode::EIGHT_TUPLET || this->subDivisionMode == mode::SIXTEENTH_TUPLET || this->subDivisionMode == mode::THIRTYSECOND_TUPLET){
+        uint16_t beatchop = this->_ticksPerBeat / k; /// overwrite ticksperbeat?
+        note.duration = (1.0f / (float)k);
+        note.start_time = (float)b + (note.duration * n);
+        note.startIndex =  this->_ticksPerBeat * ((beatchop * n) + b);
+        note.endIndex = note.startIndex + (uint16_t)(note.duration * this->_ticksPerBeat);
+        note.endIndex = note.endIndex % this->_sequenceLengthInTicks;
+    }else{
+        note.start_time = (float)b + (float)(n * this->_noteDurationInTicks / 480); // TODO Fix
+        note.duration = (float)this->_noteDurationInTicks / 480.0f; // TODO FIX
+        note.startIndex = n * this->_noteDurationInTicks;
+        note.endIndex = note.startIndex + this->_noteDurationInTicks;
+        note.endIndex = note.endIndex % this->_sequenceLengthInTicks;
+    }
+    note.probability = 127;
+    note.mute = false;
+    note.playing = false;
 
-// create some methods that populate the notes in different ways
+    return note;
+}
+
+void Sequence::modifyNote(Note * note, uint8_t b, uint8_t n, uint8_t k){
+     if (this->subDivisionMode == mode::QUARTER_TUPLET || this->subDivisionMode == mode::EIGHT_TUPLET || this->subDivisionMode == mode::SIXTEENTH_TUPLET || this->subDivisionMode == mode::THIRTYSECOND_TUPLET){
+        uint16_t beatchop = this->_ticksPerBeat / k; /// overwrite ticksperbeat?
+        note->duration = (1.0f / (float)k);
+        note->start_time = (float)b + (note->duration * n);
+        note->startIndex =  this->_ticksPerBeat * ((beatchop * n) + b);
+        note->endIndex = note->startIndex + (uint16_t)(note->duration * this->_ticksPerBeat);
+        note->endIndex = note->endIndex % this->_sequenceLengthInTicks;
+    }else{
+        note->start_time = (float)b + (float)(n * this->_noteDurationInTicks / 480); // TODO Fix
+        note->duration = (float)this->_noteDurationInTicks / 480.0f; // TODO FIX
+        note->startIndex = n * this->_noteDurationInTicks;
+        note->endIndex = note->startIndex + this->_noteDurationInTicks;
+        note->endIndex = note->endIndex % this->_sequenceLengthInTicks;
+    } 
+}

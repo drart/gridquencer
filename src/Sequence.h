@@ -19,7 +19,6 @@ struct Note
     bool playing;
 };
 
-
 enum class mode {
     QUARTER,
     QUARTER_TUPLET,
@@ -36,13 +35,16 @@ class Sequence {
         Sequence();
         Sequence(std::vector<uint8_t>);
         Sequence(std::vector<uint8_t>, mode m);
+        Note makeNote(uint8_t b, uint8_t n, uint8_t k);
+        void modifyNote(Note *, uint8_t, uint8_t, uint8_t);
         // Sequence(sd::vector<uint8_t>, mode, std::vector<uint8_t> notecycle);
         void modify(std::vector<uint8_t>);
-        void changeMode(mode m); // set the subdivision mode
+        void setMode(mode m); // set the subdivision mode
         void tick();
         bool mute;
         bool loop;
         bool playing;
+        uint8_t midiChannel;
 
     // private: 
         uint16_t _tickTime; 

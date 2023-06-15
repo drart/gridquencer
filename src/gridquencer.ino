@@ -420,15 +420,18 @@ void updateGridDisplay() {
   for(uint8_t x = 0; x < 8; x++){// fix for grid size
     for(uint8_t y = 0; y < 8; y++){
       if(mediator.cellNotes.find((y*8)+x) == mediator.cellNotes.end()){
+      // if(!mediator.cellHasNotes(x,y)){ // todo fix
         sendGrid(x, y, PUSH2COLOURS::OFF);
         continue;
       }
 
       GridCell * gc = &mediator.cellNotes[(y*8)+x];
-      if(gc->note->playing == true){
+      // if(gc->note->playing == true){
+      if(mediator.cellNoteIsPlaying(x,y)){
         sendGrid(x, y, PUSH2COLOURS::WHITE);
       }else{
-        sendGrid(x, y, gc->_region->colour);
+        sendGrid(x, y, gc->_region->colour); // todo replace this
+        // sendGrid(x,y,mediator.getColourAtCell(x,y))
       }
     }
   }
@@ -455,9 +458,9 @@ void addRegion(Cell start, Cell end){
     if ( grid.addRegion( newRegion ) ){
       Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
-      for(auto s : newRegion->regionToVector() ){
-        Serial.println(s);
-      }
+      // for(auto s : newRegion->regionToVector() ){
+        // Serial.println(s);
+      // }
     }else{
       Region * overlappingRegion = grid.getOverlappingRegion(newRegion);
       if(overlappingRegion != NULL){
@@ -465,8 +468,13 @@ void addRegion(Cell start, Cell end){
       
         if(overlappingRegion->modify(newRegion)){
           Serial.println("success");
-          printRegion(overlappingRegion);
-          mediator.modifySequence(overlappingRegion);
+          printRegionPattern(overlappingRegion);
+          Sequence * sequence = mediator.getAssociatedSequence(overlappingRegion);
+
+          Serial.println("got a sequence");
+          mediator.modifySequence(overlappingRegion, sequence);
+          printSequencePattern(sequence);
+          printSequence(sequence);
         }
 
       }else{
@@ -532,8 +540,22 @@ void printRegion(Region * r){
   }
 }
 
-void printRegionVector(Region * r){
+void printRegionPattern(Region * r){
   for(auto c : r->regionToVector()){
+    Serial.println(c);
+  }
+}
+
+void printSequence(Sequence * s){
+  for(auto n : s->_notes){
+    Serial.print(n.start_time);
+    Serial.print("->");
+    Serial.println(n.duration);
+  }
+}
+
+void printSequencePattern(Sequence * s){
+  for (auto c : s->pattern){
     Serial.println(c);
   }
 }
