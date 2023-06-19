@@ -100,9 +100,10 @@ Sequence::Sequence(std::vector<uint8_t> inputvec, mode m){
             n.velocity_deviation = 0;
             if(m == mode::QUARTER_TUPLET || m == mode::EIGHT_TUPLET || m == mode::SIXTEENTH_TUPLET || m == mode::THIRTYSECOND_TUPLET){
                 int beatchop = this->_ticksPerBeat / value;  /// overwrite ticksperbeat? 
+                // this->_noteDurationInTicks = this->_ticksPerBeat / value; // TODO move to this method
                 n.duration = (1.0f/(float)value);
                 n.start_time = (float)beatz + (i * n.duration);
-                n.startIndex = (beatz-1)*this->_ticksPerBeat+ beatchop * i ;
+                n.startIndex = (beatz-1)*this->_ticksPerBeat + beatchop * i ;
                 n.endIndex = n.startIndex + (uint16_t)(n.duration * this->_ticksPerBeat);
                 n.endIndex = n.endIndex % this->_sequenceLengthInTicks;
             }else{
@@ -171,7 +172,7 @@ Note Sequence::makeNote(uint8_t b, uint8_t n, uint8_t k) {
         uint16_t beatchop = this->_ticksPerBeat / k; /// overwrite ticksperbeat?
         note.duration = (1.0f / (float)k);
         note.start_time = (float)b + (note.duration * n);
-        note.startIndex =  this->_ticksPerBeat * ((beatchop * n) + b);
+        note.startIndex =  (this->_ticksPerBeat * (b-1))+ (beatchop * n);
         note.endIndex = note.startIndex + (uint16_t)(note.duration * this->_ticksPerBeat);
         note.endIndex = note.endIndex % this->_sequenceLengthInTicks;
     }else{
@@ -185,6 +186,8 @@ Note Sequence::makeNote(uint8_t b, uint8_t n, uint8_t k) {
     note.mute = false;
     note.playing = false;
 
+    this->printNote(note);
+
     return note;
 }
 
@@ -193,7 +196,7 @@ void Sequence::modifyNote(Note * note, uint8_t b, uint8_t n, uint8_t k){
         uint16_t beatchop = this->_ticksPerBeat / k; /// overwrite ticksperbeat?
         note->duration = (1.0f / (float)k);
         note->start_time = (float)b + (note->duration * n);
-        note->startIndex =  this->_ticksPerBeat * ((beatchop * n) + b);
+        note->startIndex =  this->_ticksPerBeat * ((beatchop * n) + (b-1));
         note->endIndex = note->startIndex + (uint16_t)(note->duration * this->_ticksPerBeat);
         note->endIndex = note->endIndex % this->_sequenceLengthInTicks;
     }else{
@@ -203,4 +206,14 @@ void Sequence::modifyNote(Note * note, uint8_t b, uint8_t n, uint8_t k){
         note->endIndex = note->startIndex + this->_noteDurationInTicks;
         note->endIndex = note->endIndex % this->_sequenceLengthInTicks;
     } 
+    this->printNote(*note);
+}
+
+
+void Sequence::printNote(Note n){
+    Serial.println("Making a note");
+    Serial.println(n.start_time);
+    Serial.println(n.startIndex);
+    Serial.println(n.duration);
+    Serial.println(n.endIndex);
 }

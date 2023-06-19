@@ -57,6 +57,8 @@ class Sequence {
         std::vector<Note> _notes;
         mode subDivisionMode;
         std::vector<uint8_t> pattern;
+
+        void printNote(Note);
 };
 
 #endif

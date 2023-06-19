@@ -221,6 +221,7 @@ void seqfun(){
         if(n->mute == true){
           Serial.println("muted note");
         }
+        Serial.println(n->pitch);
         midi_module_output.sendNoteOn(n->pitch,n->velocity,10);
       }
       if(seq->_tickTime == n->endIndex){
@@ -419,14 +420,13 @@ void sendGrid( uint8_t x, uint8_t y, uint8_t col){
 void updateGridDisplay() {
   for(uint8_t x = 0; x < 8; x++){// fix for grid size
     for(uint8_t y = 0; y < 8; y++){
-      if(mediator.cellNotes.find((y*8)+x) == mediator.cellNotes.end()){
-      // if(!mediator.cellHasNotes(x,y)){ // todo fix
+      if(!mediator.cellHasNotes(x,y)){ // todo fix
         sendGrid(x, y, PUSH2COLOURS::OFF);
         continue;
       }
 
-      GridCell * gc = &mediator.cellNotes[(y*8)+x];
-      // if(gc->note->playing == true){
+      // GridCell * gc = &mediator.cellNotes[(y*8)+x];
+      GridCell * gc = mediator.getCell(x,y);
       if(mediator.cellNoteIsPlaying(x,y)){
         sendGrid(x, y, PUSH2COLOURS::WHITE);
       }else{
@@ -548,9 +548,11 @@ void printRegionPattern(Region * r){
 
 void printSequence(Sequence * s){
   for(auto n : s->_notes){
-    Serial.print(n.start_time);
+    // Serial.print(n.start_time);
+    Serial.print(n.startIndex);
     Serial.print("->");
-    Serial.println(n.duration);
+    // Serial.println(n.duration);
+    Serial.println(n.endIndex);
   }
 }
 
