@@ -34,6 +34,7 @@ class RegionSequenceMediator{
 
     GridCell * getCell(uint8_t x, uint8_t y);
     void setCell(uint8_t x, uint8_t y, Region * r, Sequence * s, Note * n, Cell * c);
+    void resetCell(uint8_t x, uint8_t y);
 };
 
 #endif

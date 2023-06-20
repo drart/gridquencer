@@ -487,6 +487,7 @@ void addRegion(Cell start, Cell end){
 void addRegion(Cell startEnd){
   Region * newRegion = new Region(startEnd, startEnd); 
   newRegion->colour = 100;
+  Serial.println("Single cell sequence");
   if(grid.addRegion(newRegion)){
       Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?

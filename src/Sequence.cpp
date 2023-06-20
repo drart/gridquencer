@@ -89,6 +89,23 @@ Sequence::Sequence(std::vector<uint8_t> inputvec, mode m){
         break;
     }
 
+    if(inputvec.size() == 1 && inputvec.at(0) == 1){ 
+        Note n;
+        n.pitch = 60;
+        n.velocity = 127;
+        n.velocity_deviation = 0;
+        n.start_time = 1.0f;
+        n.duration = 0.5f;
+        n.startIndex = 0;
+        this->_noteDurationInTicks = this->_sequenceLengthInTicks / 2;
+        n.endIndex = this->_noteDurationInTicks;
+        n.probability = 127;
+        n.mute = false;
+        n.playing = false;
+        this->_notes.push_back(n);
+        return;
+    }
+
     uint8_t beatz = 0;
     uint8_t notecount = 0;
     for(int value : inputvec){

@@ -13,18 +13,17 @@ RegionSequenceMediator::RegionSequenceMediator(){
 
 Sequence * RegionSequenceMediator::regionToSequence(Region * region, mode subdivisionMode){
 
-  std::vector<uint8_t> thearray = region->regionToVector();
-
-  Sequence * newSequence =  new Sequence(thearray, subdivisionMode);
+  std::vector<uint8_t> pattern = region->regionToVector();
+  Sequence * newSequence =  new Sequence(pattern, subdivisionMode);
 
   for(uint8_t i = 0; i < region->cells.size(); i++){
     GridCell * gc = &this->cellNotes.at((region->cells.at(i)._y*8) + region->cells.at(i)._x);
+    // todo move to this version
+    // GridCell * gc = this->getCell( region->cells.at(i)._x, region->cells.at(i)._y );
     gc->cell = &region->cells.at(i);
     gc->note = &newSequence->_notes.at(i);
     gc->_region = region;
     gc->_sequence = newSequence;
-
-    //this->cellNotes[(gc.cell->_y*8) + gc.cell->_x] = gc; // todo fix for grid size
   }
 
   return newSequence;
@@ -88,4 +87,10 @@ void RegionSequenceMediator::setCell(uint8_t x, uint8_t y, Region * r, Sequence 
   gc->cell = c;
 }
 
-// void RegionSequenceMediator::resetCell(uint8_t x, uint8_t y){}
+void RegionSequenceMediator::resetCell(uint8_t x, uint8_t y){
+  GridCell * gc = this->getCell(x,y);
+  gc->_region = NULL;
+  gc->_sequence = NULL;
+  gc->note = NULL;
+  gc->cell = NULL;
+}
