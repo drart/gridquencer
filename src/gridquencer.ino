@@ -209,7 +209,7 @@ void seqfun(){
   sequencer.tick();
     // service notes for tick index
   if(sequencer._tickTime % 480 == 0){ // 480 should be taken from the sequencer
-    Serial.println("beat");
+    // Serial.println("beat");
     midi_module_output.sendClock(); // configure for more standard rates
   }
   for(Sequence * seq : sequencer._sequences ){
@@ -221,7 +221,7 @@ void seqfun(){
         if(n->mute == true){
           Serial.println("muted note");
         }
-        Serial.println(n->pitch);
+        // Serial.println(n->pitch);
         midi_module_output.sendNoteOn(n->pitch,n->velocity,10);
       }
       if(seq->_tickTime == n->endIndex){
@@ -256,6 +256,7 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
     addRegion(padsDown[0], padsDown[1]);
   }
   if(padsDown.size() == 1){
+    // todo select the cell only if it is part of a region
     grid._selectedCell = grid.getCell(padsDown.at(0));
 
     // TODO Re-enable this
@@ -458,9 +459,7 @@ void addRegion(Cell start, Cell end){
     if ( grid.addRegion( newRegion ) ){
       Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
-      // for(auto s : newRegion->regionToVector() ){
-        // Serial.println(s);
-      // }
+      // TODO put the sequence on the top row
     }else{
       Region * overlappingRegion = grid.getOverlappingRegion(newRegion);
       if(overlappingRegion != NULL){

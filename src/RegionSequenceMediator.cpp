@@ -34,17 +34,34 @@ void RegionSequenceMediator::modifySequence(Region * region, Sequence * sequence
   sequence->modify(region->regionToVector());
   std::vector<uint8_t> newPattern = sequence->pattern;
 
-  // TODO remove unused cells after modification
   // todo fix for the case where more rows are added
 
   for(uint8_t i = 0; i < region->cells.size(); i++){
     GridCell * gc = this->getCell(region->cells.at(i)._x, region->cells.at(i)._y);
-    gc->cell = &region->cells.at(i);
+    gc->cell = &region->cells.at(i); // is this necessary? 
     gc->note = &sequence->_notes.at(i);
     gc->_region = region;
     gc->_sequence = sequence;
+
+    uint8_t x = region->cells.at(i)._x;
+    uint8_t y = region->cells.at(i)._y;
+    // todo move to this style
+    // this->setCell(x,y,region,sequence,&sequence->_notes.at(i), &region->cells.at(i));
   }
 
+  // remove newly unused cells 
+  for(uint8_t i = 0; i < newPattern.size(); i++){
+    if(newPattern.at(i) != oldPattern.at(i)){
+      if(newPattern.at(i) < oldPattern.at(i)){
+        for(uint8_t n = newPattern.at(i); n < oldPattern.at(i); n++){
+          Serial.print(region->_bottomLeft._y + i);
+          Serial.print(",");
+          Serial.println(region->_bottomLeft._x + n);
+          this->resetCell(region->_bottomLeft._x + n, region->_bottomLeft._y + i);
+        }
+      }
+    }
+  }
 }
 
 Sequence * RegionSequenceMediator::getAssociatedSequence(Region * region){
@@ -59,7 +76,6 @@ Sequence * RegionSequenceMediator::getAssociatedSequence(Region * region){
   return seq;
 }
 
-// TODO BROKEN? 
 bool RegionSequenceMediator::cellHasNotes(uint8_t x, uint8_t y){ 
   GridCell * gc = this->getCell(x,y);
   if(gc->note != NULL){
@@ -75,8 +91,8 @@ bool RegionSequenceMediator::cellNoteIsPlaying(uint8_t x, uint8_t y){ // doesn't
   return false;
 }
 
-GridCell * RegionSequenceMediator::getCell(uint8_t x, uint8_t y){
-  return &this->cellNotes[(y*8) + x];
+GridCell * RegionSequenceMediator::getCell(uint8_t x, uint8_t y){ // todo fix for grid size
+  return &this->cellNotes[(y*8) + x]; 
 }
 
 void RegionSequenceMediator::setCell(uint8_t x, uint8_t y, Region * r, Sequence * s, Note * n, Cell * c){
