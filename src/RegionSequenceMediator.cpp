@@ -34,8 +34,6 @@ void RegionSequenceMediator::modifySequence(Region * region, Sequence * sequence
   sequence->modify(region->regionToVector());
   std::vector<uint8_t> newPattern = sequence->pattern;
 
-  // todo fix for the case where more rows are added
-
   for(uint8_t i = 0; i < region->cells.size(); i++){
     GridCell * gc = this->getCell(region->cells.at(i)._x, region->cells.at(i)._y);
     gc->cell = &region->cells.at(i); // is this necessary? 
@@ -47,6 +45,16 @@ void RegionSequenceMediator::modifySequence(Region * region, Sequence * sequence
     uint8_t y = region->cells.at(i)._y;
     // todo move to this style
     // this->setCell(x,y,region,sequence,&sequence->_notes.at(i), &region->cells.at(i));
+  }
+
+  // pad pattern vectors with zeroes if they are a different size so next block doesn't crash
+  while(oldPattern.size() > newPattern.size()){
+    Serial.println("adding a row to newpattern");
+    newPattern.push_back(0);
+  }
+  while(newPattern.size() > oldPattern.size()){
+    Serial.println("adding a row to oldpattern");
+    oldPattern.push_back(0);
   }
 
   // remove newly unused cells 

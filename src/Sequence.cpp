@@ -147,6 +147,18 @@ void Sequence::tick(){
 }
 
 void Sequence::modify(std::vector<uint8_t> newPattern){ 
+
+    while(newPattern.size() > this->pattern.size()){
+        Serial.println("adding a row to old pattern");
+        this->pattern.push_back(0);
+        this->_sequenceLengthInTicks += 480; // todo fix!!!
+    }
+    while(this->pattern.size() > newPattern.size()){
+        Serial.println("adding a row to new pattern");
+        newPattern.push_back(0);
+        this->_sequenceLengthInTicks -= 480; /// TODO FIX!
+    }
+
     for(uint8_t i = 0; i < newPattern.size(); i++){
         if(this->pattern.at(i) != newPattern.at(i)){
             uint8_t b = i + 1;
@@ -173,6 +185,11 @@ void Sequence::modify(std::vector<uint8_t> newPattern){
                 this->_notes.erase(std::remove_if(insertPoint,this->_notes.end(), [&](Note n){return (uint8_t)floor(n.start_time) == b;}));
             }
         }
+    }
+
+    for(auto n : this->_notes){
+        n.endIndex = n.startIndex + (uint16_t)(n.duration * this->_ticksPerBeat);
+        n.endIndex = n.endIndex % this->_sequenceLengthInTicks;
     }
     this->pattern = newPattern;
 }
