@@ -42,6 +42,15 @@ bool Grid::doesOverlap(Region * newRegion){
   return false;
 }
 
+bool Grid::doesOverlap(Cell * cell){
+  for(auto r : this->_regions){
+    if(r->containsCell(cell)){
+      return true;
+    }
+  }
+  return false;
+}
+
 Region * Grid::getOverlappingRegion(Region * region){
   std::vector<Region *> overlappingRegions;
   

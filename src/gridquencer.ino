@@ -41,7 +41,6 @@ enum class entryMode{
   // MOVE?
 };
 
-
 enum PUSH2COLOURS { // https://gist.github.com/adamjmurray/21d7d3ae1f2ef8c66a19
   OFF,
   DARK_GREY,
@@ -156,27 +155,29 @@ void setup()
     uint8_t sysexUserModeMessage[] = {240, 71, 127, 21, 98, 0, 1, 0, 247};
     midicontroller.sendSysEx(9, sysexUserModeMessage, true, 1);
 
-    uint8_t line1[] = {240,71,127,21,28,0,0,247};
-    uint8_t line2[] = {240,71,127,21,29,0,0,247};
-    uint8_t line3[] = {240,71,127,21,30,0,0,247};
-    uint8_t line4[] = {240,71,127,21,31,0,0,247};
-    midicontroller.sendSysEx(sizeof(line1)/sizeof(uint8_t), line1, true);
-    midicontroller.sendSysEx(sizeof(line2)/sizeof(uint8_t), line2, true);
-    midicontroller.sendSysEx(sizeof(line3)/sizeof(uint8_t), line3, true);
-    midicontroller.sendSysEx(sizeof(line4)/sizeof(uint8_t), line4, true);
+    lcdWrite("Welcome to Gridquencer", 0, 0);
 
-    // PUSH SYSEX Spec
-    // 240,71,127,21,<24+line(0-3)>,0,<Nchars+1>,<Offset>,<Chars>,247
-    // 240,71,127,21,25,0,14,4,"Hello World",247 /// string is length 13
-    String welcome = "Welcome to Gridquencer";
-    std::vector<uint8_t> message = {240,71,127,21,24,0};
-    message.push_back(welcome.length()+1);
-    message.push_back(0);
-    for(uint8_t i = 0; i < welcome.length(); i++){
-      message.push_back(welcome.charAt(i));
-    }
-    message.push_back(247);
-    midicontroller.sendSysEx(message.size(), message.data(), true);
+    // uint8_t line1[] = {240,71,127,21,28,0,0,247};
+    // uint8_t line2[] = {240,71,127,21,29,0,0,247};
+    // uint8_t line3[] = {240,71,127,21,30,0,0,247};
+    // uint8_t line4[] = {240,71,127,21,31,0,0,247};
+    // midicontroller.sendSysEx(sizeof(line1)/sizeof(uint8_t), line1, true);
+    // midicontroller.sendSysEx(sizeof(line2)/sizeof(uint8_t), line2, true);
+    // midicontroller.sendSysEx(sizeof(line3)/sizeof(uint8_t), line3, true);
+    // midicontroller.sendSysEx(sizeof(line4)/sizeof(uint8_t), line4, true);
+
+    // // PUSH SYSEX Spec
+    // // 240,71,127,21,<24+line(0-3)>,0,<Nchars+1>,<Offset>,<Chars>,247
+    // // 240,71,127,21,25,0,14,4,"Hello World",247 /// string is length 13
+    // String welcome = "Welcome to Gridquencer";
+    // std::vector<uint8_t> message = {240,71,127,21,24,0};
+    // message.push_back(welcome.length()+1);
+    // message.push_back(0);
+    // for(uint8_t i = 0; i < welcome.length(); i++){
+    //   message.push_back(welcome.charAt(i));
+    // }
+    // message.push_back(247);
+    // midicontroller.sendSysEx(message.size(), message.data(), true);
 
     midicontroller.sendControlChange(87, 127, 1); // new button
     midicontroller.sendControlChange(50, 127, 1); // note button
@@ -236,6 +237,13 @@ void loop() {
   myusb.Task();
   midicontroller.read();
   updateGridDisplay(); // refactor this function to look for changes from last call? 
+  lcdWrite("welcome", 0, 0);
+  //updateLCDDisplay(); // TODO move to this format that deals with the region or note display mode
+  if(grid._selectedCell == NULL){
+    // Serial.println("nothing selected");
+  }else{
+    // Serial.println(grid._selectedCell->_x);
+  }
 } 
 
 void OnNoteOn(byte channel, byte note, byte velocity) {
@@ -257,8 +265,14 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
   }
   if(padsDown.size() == 1){
     // todo select the cell only if it is part of a region
-    grid._selectedCell = grid.getCell(padsDown.at(0));
-
+    grid._selectedCell = grid.getCell(padsDown.at(0)); // TODO buggy, always returns null
+    if(grid._selectedCell == NULL){
+      Serial.println("null selected cell");
+    }else{
+      Serial.println("selected a cell");
+      bool temp = grid.doesOverlap(grid._selectedCell); 
+      Serial.println(temp);
+    }
     // TODO Re-enable this
     // switch(regionMode){
     //   case entryMode::MUTE:
@@ -426,6 +440,7 @@ void updateGridDisplay() {
         continue;
       }
 
+      // todo show darkened for mute? 
       // GridCell * gc = &mediator.cellNotes[(y*8)+x];
       GridCell * gc = mediator.getCell(x,y);
       if(mediator.cellNoteIsPlaying(x,y)){
@@ -439,17 +454,40 @@ void updateGridDisplay() {
 }
 
 void updateLCD(){
+  lcdClearLine(0);
+  lcdClearLine(1);
+  lcdClearLine(2);
+  lcdClearLine(3);
+  // selectedCell - get the note and lay out the note params on the knobs
 }
 
 // PUSH SYSEX Spec
 // 240,71,127,21,<24+line(0-3)>,0,<Nchars+1>,<Offset>,<Chars>,247
 // 240,71,127,21,25,0,13,4,"Hello World",247
-void lcdClearLine(uint8_t line)
-{
+void lcdClearLine(uint8_t line) {
   // todo check that line is between 0 and 3 (or 1 and 4?)
-  line = 0;
-  uint8_t message[] = {240,71,127,21,uint8_t(28+line),0,0,247};
+  uint8_t message[] = {240,71,127,21,uint8_t(24+line),0,0,247};
   midicontroller.sendSysEx(10, message, true);
+}
+
+void lcdClearAll(){
+    lcdClearLine(0);
+    lcdClearLine(1);
+    lcdClearLine(2);
+    lcdClearLine(3);
+}
+
+void lcdWrite(String message, uint8_t line, uint8_t offset){
+    lcdClearAll();
+
+    std::vector<uint8_t> sysexMessage {240,71,127,21,24,0};
+    sysexMessage.push_back(message.length()+1);
+    sysexMessage.push_back(0);
+    for(uint8_t i = 0; i < message.length(); i++){
+      sysexMessage.push_back(message.charAt(i));
+    }
+    sysexMessage.push_back(247);
+    midicontroller.sendSysEx(sysexMessage.size(), sysexMessage.data(), true);
 }
 
 void addRegion(Cell start, Cell end){

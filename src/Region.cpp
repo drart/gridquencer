@@ -63,6 +63,7 @@ bool Region::modify(Region * region){
 
 bool Region::containsCell(Cell * c){
   for(auto cell : this->cells){
+    // TODO if( c == cell){
     if(c->_x == cell._x && c->_y == cell._y){
       return true;
     }
