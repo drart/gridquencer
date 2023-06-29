@@ -89,6 +89,7 @@ Sequence::Sequence(std::vector<uint8_t> inputvec, mode m){
         break;
     }
 
+    // special case of a sequence with only one note in it
     if(inputvec.size() == 1 && inputvec.at(0) == 1){ 
         Note n;
         n.pitch = 60;
@@ -151,7 +152,7 @@ void Sequence::modify(std::vector<uint8_t> newPattern){
     while(newPattern.size() > this->pattern.size()){
         Serial.println("adding a row to old pattern");
         this->pattern.push_back(0);
-        this->_sequenceLengthInTicks += 480; // todo fix!!!
+        this->_sequenceLengthInTicks += 480; // todo fix!!! needs to respond to different lengths with subdivisionmodes
     }
     while(this->pattern.size() > newPattern.size()){
         Serial.println("adding a row to new pattern");
@@ -162,7 +163,7 @@ void Sequence::modify(std::vector<uint8_t> newPattern){
     for(uint8_t i = 0; i < newPattern.size(); i++){
         if(this->pattern.at(i) != newPattern.at(i)){
             uint8_t b = i + 1;
-            Serial.println("beat modification needed");
+            // Serial.println("beat modification needed");
             std::vector<Note>::iterator insertPoint = std::find_if(this->_notes.begin(), this->_notes.end(), [&](Note n){return (uint8_t)floor(n.start_time) == b;});
             
             if(this->pattern.at(i) < newPattern.at(i)){
@@ -172,7 +173,7 @@ void Sequence::modify(std::vector<uint8_t> newPattern){
                     std::advance(insertPoint, 1);
                 }
                 for(uint8_t k = this->pattern.at(i); k < newPattern.at(i); k++ ){
-                    Serial.println("making new notes");
+                    // Serial.println("making new notes");
                     Note n = this->makeNote(b, k, newPattern.at(i));
                     newNotes.push_back(n);
                 }
@@ -182,7 +183,7 @@ void Sequence::modify(std::vector<uint8_t> newPattern){
                     this->modifyNote(&(*insertPoint), b, j, newPattern.at(i)); // TODO FIX
                     std::advance(insertPoint, 1); 
                 }
-                this->_notes.erase(std::remove_if(insertPoint,this->_notes.end(), [&](Note n){return (uint8_t)floor(n.start_time) == b;}));
+                this->_notes.erase(std::remove_if(insertPoint,this->_notes.end(), [&](Note n){return (uint8_t)floor(n.start_time) == b;}), this->_notes.end());
             }
         }
     }
@@ -191,6 +192,7 @@ void Sequence::modify(std::vector<uint8_t> newPattern){
         n.endIndex = n.startIndex + (uint16_t)(n.duration * this->_ticksPerBeat);
         n.endIndex = n.endIndex % this->_sequenceLengthInTicks;
     }
+    
     this->pattern = newPattern;
 }
 
