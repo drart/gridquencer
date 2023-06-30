@@ -19,15 +19,15 @@ struct GridCell {
 class RegionSequenceMediator{
   public: 
     RegionSequenceMediator();
+    std::vector<GridCell> cellNotes;
+
     std::vector<uint8_t> regionToVector(Region * region);
     std::vector<uint8_t> sequenceToVector(Sequence * sequence);
     Sequence * regionToSequence(Region * region, mode subdivisionMode);
     Sequence * getAssociatedSequence(Region *);
-    void modifySequence(Region * region, Sequence * sequence);
-    // std::map<uint8_t, GridCell> cellNotes;
-    std::vector<GridCell> cellNotes;
 
-    Grid grid; 
+    void modifySequence(Region * region, Sequence * sequence);
+    void erase(Region * r);
     
     bool cellHasNotes(uint8_t x, uint8_t y);
     bool cellNoteIsPlaying(uint8_t x, uint8_t y);

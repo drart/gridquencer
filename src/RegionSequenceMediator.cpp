@@ -41,9 +41,9 @@ void RegionSequenceMediator::modifySequence(Region * region, Sequence * sequence
     gc->_region = region;
     gc->_sequence = sequence;
 
-    uint8_t x = region->cells.at(i)._x;
-    uint8_t y = region->cells.at(i)._y;
     // todo move to this style
+    // uint8_t x = region->cells.at(i)._x;
+    // uint8_t y = region->cells.at(i)._y;
     // this->setCell(x,y,region,sequence,&sequence->_notes.at(i), &region->cells.at(i));
   }
 
@@ -117,4 +117,9 @@ void RegionSequenceMediator::resetCell(uint8_t x, uint8_t y){
   gc->_sequence = NULL;
   gc->note = NULL;
   gc->cell = NULL;
+}
+
+void RegionSequenceMediator::erase(Region * r){
+  Sequence * s = this->getAssociatedSequence(r);
+  this->cellNotes.erase(std::remove_if(this->cellNotes.begin(), this->cellNotes.end(), [&](GridCell gc){return gc._region == r;}), this->cellNotes.end());
 }

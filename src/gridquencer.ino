@@ -32,6 +32,7 @@ Sequencer sequencer(60.0f, 480);  // bpm, ticks per beat. 480 allows for good re
 std::vector<Cell> padsDown;
 Grid grid;
 RegionSequenceMediator mediator;
+bool deleteButtonPressed = false;
 
 mode subdivisionMode = mode::SIXTEENTH_TUPLET; 
 enum class entryMode{
@@ -155,34 +156,15 @@ void setup()
     uint8_t sysexUserModeMessage[] = {240, 71, 127, 21, 98, 0, 1, 0, 247};
     midicontroller.sendSysEx(9, sysexUserModeMessage, true, 1);
 
-    lcdWrite("Welcome to Gridquencer", 0, 0);
-
-    // uint8_t line1[] = {240,71,127,21,28,0,0,247};
-    // uint8_t line2[] = {240,71,127,21,29,0,0,247};
-    // uint8_t line3[] = {240,71,127,21,30,0,0,247};
-    // uint8_t line4[] = {240,71,127,21,31,0,0,247};
-    // midicontroller.sendSysEx(sizeof(line1)/sizeof(uint8_t), line1, true);
-    // midicontroller.sendSysEx(sizeof(line2)/sizeof(uint8_t), line2, true);
-    // midicontroller.sendSysEx(sizeof(line3)/sizeof(uint8_t), line3, true);
-    // midicontroller.sendSysEx(sizeof(line4)/sizeof(uint8_t), line4, true);
-
-    // // PUSH SYSEX Spec
-    // // 240,71,127,21,<24+line(0-3)>,0,<Nchars+1>,<Offset>,<Chars>,247
-    // // 240,71,127,21,25,0,14,4,"Hello World",247 /// string is length 13
-    // String welcome = "Welcome to Gridquencer";
-    // std::vector<uint8_t> message = {240,71,127,21,24,0};
-    // message.push_back(welcome.length()+1);
-    // message.push_back(0);
-    // for(uint8_t i = 0; i < welcome.length(); i++){
-    //   message.push_back(welcome.charAt(i));
-    // }
-    // message.push_back(247);
-    // midicontroller.sendSysEx(message.size(), message.data(), true);
+    for(uint16_t i = 102; i < 110; i++){ // send blanks for region selecting bar
+      midicontroller.sendControlChange(i, 1, 1);
+    }
 
     midicontroller.sendControlChange(87, 127, 1); // new button
     midicontroller.sendControlChange(50, 127, 1); // note button
     midicontroller.sendControlChange(60, 1, 1); // mute button
     midicontroller.sendControlChange(49, 1, 1); // shift button 
+    midicontroller.sendControlChange(118, 1, 1); // delete button 
 
     changeSubdivisionMode(41);
     //changeEntryMode();
@@ -237,7 +219,7 @@ void loop() {
   myusb.Task();
   midicontroller.read();
   updateGridDisplay(); // refactor this function to look for changes from last call? 
-  lcdWrite("welcome", 0, 0);
+  lcdWrite("Welcome to Gridquencer", 0, 0);
   //updateLCDDisplay(); // TODO move to this format that deals with the region or note display mode
   if(grid._selectedCell == NULL){
     // Serial.println("nothing selected");
@@ -390,6 +372,33 @@ void OnControlChange(byte channel, byte control, byte value) {
     case 43:
       if(value == 127){ changeSubdivisionMode(control); }
     break;
+    case 102:
+      if(value == 127){ selectRegion(0); }
+    break;
+    case 103:
+      if(value == 127){ selectRegion(1); }
+    break;
+    case 104:
+      if(value == 127){ selectRegion(2); }
+    break;
+    case 105:
+      if(value == 127){ selectRegion(3); }
+    break;
+    case 106:
+      if(value == 127){ selectRegion(4); }
+    break;
+    case 107:
+      if(value == 127){ selectRegion(5); }
+    break;
+    case 108:
+      if(value == 127){ selectRegion(6); }
+    break;
+    case 109:
+      if(value == 127){ selectRegion(7); }
+    break;
+    case 118:
+      if(value == 127){deleteButtonPressed = true;}else{deleteButtonPressed = false;}
+    break;
   }
 }
 
@@ -497,7 +506,7 @@ void addRegion(Cell start, Cell end){
     if ( grid.addRegion( newRegion ) ){
       Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
-      // TODO put the sequence on the top row
+      regionTopRow(newRegion);
     }else{
       Region * overlappingRegion = grid.getOverlappingRegion(newRegion);
       if(overlappingRegion != NULL){
@@ -528,6 +537,7 @@ void addRegion(Cell startEnd){
   if(grid.addRegion(newRegion)){
       Sequence * newSequence = mediator.regionToSequence(newRegion, subdivisionMode);
       sequencer.queueSequence(newSequence);  // TODO it would be nice if this held off until the noteOff, maybe?
+      regionTopRow(newRegion);
   }else{
     delete newRegion;
   }
@@ -597,5 +607,33 @@ void printSequence(Sequence * s){
 void printSequencePattern(Sequence * s){
   for (auto c : s->pattern){
     Serial.println(c);
+  }
+}
+
+void regionTopRow(Region * r){
+  if(grid._regions.size() <= 8){
+    uint8_t rowbutton = 101 + grid._regions.size();
+    midicontroller.sendControlChange(rowbutton, r->colour, 1);
+  }
+}
+
+void selectRegion(uint8_t index){
+  if(index < grid._regions.size()){
+    grid._selectedRegion = grid._regions.at(index);
+    Serial.println(index);
+    if(deleteButtonPressed){
+      Serial.println("delete a thing");
+      deleteRegion(index);
+      midicontroller.sendControlChange(102+index, 1, 1);
+    }
+  }
+}
+
+void deleteRegion(uint8_t index){
+  if(index < grid._regions.size() ){
+    Region * r = grid._regions.at(index);
+    mediator.erase(r);
+    grid._regions.erase(grid._regions.begin() + index);
+    sequencer._sequences.erase(sequencer._sequences.begin() + index);
   }
 }
